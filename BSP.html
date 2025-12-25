@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Ball Sort - Level Selector</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --tube-color: rgba(255, 255, 255, 0.12);
+            --ui-text: #e0e0e0;
+            --ball-size: 42px; /* 稍微縮小一點確保不超出 */
+            --tube-w: 56px;
+            --tube-h: 210px; /* 增加高度 */
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--ui-text);
+            touch-action: manipulation;
+        }
+
+        /* 頂部看板 */
+        .header {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.4);
+            padding: 15px 25px;
+            border-radius: 15px;
+            width: 85%;
+            max-width: 400px;
+        }
+
+        .stats-group { display: flex; gap: 20px; font-size: 0.9rem; }
+        .stat-val { color: #2ed573; font-weight: bold; font-family: monospace; }
+
+        /* 關卡選擇器樣式 */
+        .level-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select {
+            background: #4834d4;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            gap: 15px;
+            padding: 20px;
+            flex-grow: 1;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        .tube {
+            width: var(--tube-w);
+            height: var(--tube-h);
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: none;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            padding-bottom: 8px; /* 底部緩衝 */
+            cursor: pointer;
+            position: relative;
+            background: var(--tube-color);
+            transition: transform 0.2s;
+            box-sizing: border-box;
+        }
+
+        .tube.selected {
+            transform: translateY(-15px);
+            border-color: #f1c40f;
+            box-shadow: 0 8px 15px rgba(241, 196, 15, 0.3);
+        }
+
+        .ball {
+            width: var(--ball-size);
+            height: var(--ball-size);
+            border-radius: 50%;
+            margin-bottom: 3px; /* 球體間距 */
+            background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .moving-ball {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 擴充顏色庫 */
+        .c-1 { --color-light: #ff6b6b; } 
+        .c-2 { --color-light: #4dabf7; } 
+        .c-3 { --color-light: #51cf66; } 
+        .c-4 { --color-light: #fcc419; } 
+        .c-5 { --color-light: #ae3ec9; } 
+        .c-6 { --color-light: #20c997; } 
+        .c-7 { --color-light: #f783ac; } 
+        .c-8 { --color-light: #94a3b8; }
+
+        .footer { margin-bottom: 25px; }
+        button {
+            padding: 10px 25px;
+            background: #2ed573;
+            border: none;
+            color: #1a1a2e;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="level-picker-container">
+            <span>跳轉關卡:</span>
+            <select id="level-select" onchange="jumpToLevel(this.value)"></select>
+        </div>
+        <div class="stats-group">
+            <div>時間: <span id="timer" class="stat-val">00:00</span></div>
+            <div>步數: <span id="moves" class="stat-val">0</span></div>
+        </div>
+    </div>
+    
+    <div id="game-container"></div>
+
+    <div class="footer">
+        <button onclick="initLevel(false)">重新開始本關</button>
+    </div>
+
+    <script>
+        const CAPACITY = 4;
+        let currentLevel = 1;
+        let tubesData = [];
+        let selectedIdx = null;
+        let moveCount = 0;
+        let seconds = 0;
+        let timerInterval = null;
+        let isAnimating = false;
+
+        // 初始化關卡選單
+        const selectEl = document.getElementById('level-select');
+        for(let i=1; i<=20; i++) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = `Level ${i}`;
+            selectEl.appendChild(opt);
+        }
+
+        function initLevel(resetStats = true) {
+            if(resetStats) {
+                moveCount = 0;
+                seconds = 0;
+                document.getElementById('moves').innerText = '0';
+                startTimer();
+            }
+            selectedIdx = null;
+            document.getElementById('level-select').value = currentLevel;
+
+            // 難度控制
+            const colorCount = Math.min(3 + Math.floor((currentLevel - 1) / 2), 8);
+            const tubeCount = colorCount + 2;
+
+            let pool = [];
+            for(let i=1; i<=colorCount; i++) {
+                for(let j=0; j<CAPACITY; j++) pool.push(i);
+            }
+            pool.sort(() => Math.random() - 0.5);
+
+            tubesData = Array.from({length: tubeCount}, () => []);
+            for(let i=0; i<pool.length; i++) {
+                tubesData[Math.floor(i/CAPACITY)].push(pool[i]);
+            }
+            render();
+        }
+
+        function jumpToLevel(lv) {
+            currentLevel = parseInt(lv);
+            initLevel(true);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                seconds++;
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function render() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = '';
+            tubesData.forEach((balls, idx) => {
+                const tubeDiv = document.createElement('div');
+                tubeDiv.className = `tube ${selectedIdx === idx ? 'selected' : ''}`;
+                tubeDiv.id = `tube-${idx}`;
+                tubeDiv.onclick = () => handleTubeClick(idx);
+                balls.forEach(colorNum => {
+                    const ballDiv = document.createElement('div');
+                    ballDiv.className = `ball c-${colorNum}`;
+                    tubeDiv.appendChild(ballDiv);
+                });
+                container.appendChild(tubeDiv);
+            });
+        }
+
+        async function handleTubeClick(idx) {
+            if (isAnimating) return;
+            if (selectedIdx === null) {
+                if (tubesData[idx].length > 0) {
+                    selectedIdx = idx; render();
+                }
+            } else {
+                if (selectedIdx === idx) {
+                    selectedIdx = null; render();
+                } else {
+                    const from = tubesData[selectedIdx];
+                    const to = tubesData[idx];
+                    const ball = from[from.length - 1];
+                    if (to.length < CAPACITY && (to.length === 0 || to[to.length-1] === ball)) {
+                        await animateBallMove(selectedIdx, idx);
+                        to.push(from.pop());
+                        moveCount++;
+                        document.getElementById('moves').innerText = moveCount;
+                        selectedIdx = null; render();
+                        checkWin();
+                    } else {
+                        selectedIdx = tubesData[idx].length > 0 ? idx : null;
+                        render();
+                    }
+                }
+            }
+        }
+
+        function animateBallMove(fromIdx, toIdx) {
+            return new Promise(resolve => {
+                isAnimating = true;
+                const fromTubeEl = document.getElementById(`tube-${fromIdx}`);
+                const toTubeEl = document.getElementById(`tube-${toIdx}`);
+                const ballEl = fromTubeEl.lastElementChild;
+                const startRect = ballEl.getBoundingClientRect();
+                const dummy = ballEl.cloneNode(true);
+                dummy.classList.add('moving-ball');
+                dummy.style.left = startRect.left + 'px';
+                dummy.style.top = startRect.top + 'px';
+                document.body.appendChild(dummy);
+                ballEl.style.visibility = 'hidden';
+
+                const fRect = fromTubeEl.getBoundingClientRect();
+                const tRect = toTubeEl.getBoundingClientRect();
+                // 修正落點：底部 - 內距(8) - (目前球數+1)*球高度間距(45)
+                const targetTop = tRect.bottom - 8 - ((tubesData[toIdx].length + 1) * 45);
+
+                dummy.style.transform = `translateY(${fRect.top - startRect.top - 65}px)`;
+                setTimeout(() => {
+                    const moveX = tRect.left - fRect.left;
+                    dummy.style.transform = `translate(${moveX}px, ${fRect.top - startRect.top - 65}px)`;
+                    setTimeout(() => {
+                        dummy.style.transform = `translate(${moveX}px, ${targetTop - startRect.top}px)`;
+                        setTimeout(() => {
+                            dummy.remove();
+                            isAnimating = false;
+                            resolve();
+                        }, 350);
+                    }, 350);
+                }, 350);
+            });
+        }
+
+        function checkWin() {
+            const win = tubesData.every(t => t.length === 0 || (t.length === CAPACITY && t.every(b => b === t[0])));
+            if (win) {
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    alert(`恭喜！Level ${currentLevel} 通過！`);
+                    currentLevel++;
+                    initLevel(true);
+                }, 300);
+            }
+        }
+
+        initLevel();
+    </script>
+</body>
+</html>
