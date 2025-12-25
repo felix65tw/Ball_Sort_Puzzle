@@ -1,218 +1,221 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Ball Sort - Level Selector</title>
+    <title>Ball Sort - Pro Version</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
-            --tube-color: rgba(255, 255, 255, 0.12);
-            --ui-text: #e0e0e0;
-            --ball-size: 42px; /* 稍微縮小一點確保不超出 */
+            --tile-bg: #16213e;
+            --accent: #2ed573;
+            --text-main: #e0e0e0;
+            --ball-size: 40px;
             --tube-w: 56px;
-            --tube-h: 210px; /* 增加高度 */
+            --tube-h: 210px;
+            --btn-undo: #3498db;
+            --btn-extra: #f39c12;
+            --btn-reset: #e74c3c;
+            --btn-sound: #8e44ad;
+            --btn-disabled: #334155;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Clear Sans', 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            color: var(--ui-text);
+            margin: 0; display: flex; flex-direction: column; align-items: center;
+            height: 100vh; color: var(--text-main); overflow: hidden;
             touch-action: manipulation;
         }
 
-        /* 頂部看板 */
-        .header {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            background: rgba(0,0,0,0.4);
-            padding: 15px 25px;
-            border-radius: 15px;
-            width: 85%;
-            max-width: 400px;
+        /* --- Stats Header --- */
+        .score-container {
+            margin-top: 20px; display: flex; flex-wrap: wrap;
+            justify-content: center; gap: 6px; width: 95%; max-width: 500px;
+        }
+        .stat-tile {
+            background: var(--tile-bg); min-width: 65px; padding: 12px 4px;
+            border-radius: 6px; text-align: center; flex: 1;
+            border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+        }
+        .stat-label { display: block; font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; pointer-events: none; }
+        .stat-val { display: block; font-size: 18px; font-weight: bold; color: #f1c40f; pointer-events: none; }
+
+        .level-display {
+            margin-top: 15px; padding: 8px 25px; background: #2c3e50;
+            border-radius: 20px; font-weight: bold; color: #eee;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: 0.2s;
         }
 
-        .stats-group { display: flex; gap: 20px; font-size: 0.9rem; }
-        .stat-val { color: #2ed573; font-weight: bold; font-family: monospace; }
-
-        /* 關卡選擇器樣式 */
-        .level-picker-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        select {
-            background: #4834d4;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            outline: none;
-            cursor: pointer;
-        }
-
+        /* --- Game Area --- */
         #game-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-content: center;
-            gap: 15px;
-            padding: 20px;
-            flex-grow: 1;
-            width: 100%;
-            overflow-y: auto;
+            display: flex; flex-wrap: wrap; justify-content: center;
+            align-content: center; gap: 15px; padding: 10px 20px;
+            flex-grow: 1; width: 100%;
         }
-
         .tube {
-            width: var(--tube-w);
-            height: var(--tube-h);
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: none;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            display: flex;
-            flex-direction: column-reverse;
-            align-items: center;
-            padding-bottom: 8px; /* 底部緩衝 */
-            cursor: pointer;
-            position: relative;
-            background: var(--tube-color);
-            transition: transform 0.2s;
-            box-sizing: border-box;
+            width: var(--tube-w); height: var(--tube-h);
+            border: 3px solid rgba(255,255,255,0.25); border-top: none;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            display: flex; flex-direction: column-reverse; align-items: center;
+            padding-bottom: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
         }
-
-        .tube.selected {
-            transform: translateY(-15px);
-            border-color: #f1c40f;
-            box-shadow: 0 8px 15px rgba(241, 196, 15, 0.3);
-        }
+        .tube.selected { transform: translateY(-15px); border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
 
         .ball {
-            width: var(--ball-size);
-            height: var(--ball-size);
-            border-radius: 50%;
-            margin-bottom: 3px; /* 球體間距 */
-            background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
-            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3);
-            flex-shrink: 0;
+            width: var(--ball-size); height: var(--ball-size); border-radius: 50%;
+            margin-bottom: 3px; background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3); flex-shrink: 0;
         }
+        .c-1 { --color-light: #ff6b6b; } .c-2 { --color-light: #4dabf7; } .c-3 { --color-light: #51cf66; } 
+        .c-4 { --color-light: #fcc419; } .c-5 { --color-light: #ae3ec9; } .c-6 { --color-light: #20c997; }
+        .c-7 { --color-light: #f783ac; } .c-8 { --color-light: #94a3b8; }
 
-        .moving-ball {
-            position: fixed;
-            pointer-events: none;
-            z-index: 1000;
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- Footer Controls --- */
+        .footer { display: flex; justify-content: center; gap: 8px; margin-bottom: 35px; width: 95%; max-width: 500px; }
+        .footer button {
+            flex: 1; height: 45px; border: none; color: white; font-weight: bold;
+            border-radius: 6px; cursor: pointer; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s;
         }
+        .footer button:disabled { background-color: var(--btn-disabled) !important; color: #64748b; cursor: not-allowed; opacity: 0.7; }
+        .btn-undo { background: var(--btn-undo); }
+        .btn-extra { background: var(--btn-extra); }
+        .btn-reset { background: var(--btn-reset); }
+        .btn-sound { background: var(--btn-sound); }
 
-        /* 擴充顏色庫 */
-        .c-1 { --color-light: #ff6b6b; } 
-        .c-2 { --color-light: #4dabf7; } 
-        .c-3 { --color-light: #51cf66; } 
-        .c-4 { --color-light: #fcc419; } 
-        .c-5 { --color-light: #ae3ec9; } 
-        .c-6 { --color-light: #20c997; } 
-        .c-7 { --color-light: #f783ac; } 
-        .c-8 { --color-light: #94a3b8; }
-
-        .footer { margin-bottom: 25px; }
-        button {
-            padding: 10px 25px;
-            background: #2ed573;
-            border: none;
-            color: #1a1a2e;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
+        /* --- Level Selector Overlay --- */
+        #level-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 46, 0.98); z-index: 4000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
         }
+        .level-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+            padding: 20px; width: 85%; max-width: 350px;
+        }
+        .level-item {
+            aspect-ratio: 1; background: var(--tile-bg); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: bold; color: #eee; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .level-item.active { border: 2px solid var(--f1c40f); color: var(--f1c40f); }
+
+        /* --- Result Screen --- */
+        .result-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26,26,46,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
+        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .overlay-title { font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: var(--accent); letter-spacing: 2px; }
+        
+        .res-data-box { margin-bottom: 25px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; }
+        .res-line { display: flex; justify-content: space-between; margin: 10px 0; color: #94a3b8; font-weight: bold; font-size: 0.9rem; }
+        .res-line span:last-child { color: #f1c40f; }
+
+        .res-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; color: #1a1a2e; transition: 0.2s; }
+        .res-btn:active { transform: scale(0.98); }
+
+        #fx-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 2500; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="level-picker-container">
-            <span>跳轉關卡:</span>
-            <select id="level-select" onchange="jumpToLevel(this.value)"></select>
-        </div>
-        <div class="stats-group">
-            <div>時間: <span id="timer" class="stat-val">00:00</span></div>
-            <div>步數: <span id="moves" class="stat-val">0</span></div>
-        </div>
+    <canvas id="fx-canvas"></canvas>
+
+    <div class="score-container">
+        <div class="stat-tile" onclick="testWinTrigger()"><span class="stat-label">Time</span><span id="timer" class="stat-val">00:00</span></div>
+        <div class="stat-tile"><span class="stat-label">Moves</span><span id="moves" class="stat-val">0</span></div>
+        <div class="stat-tile"><span class="stat-label">Undo</span><span id="undo-now" class="stat-val">0</span></div>
+        <div class="stat-tile"><span class="stat-label">Extra</span><span id="extra-now" class="stat-val">0/1</span></div>
     </div>
+
+    <div class="level-display" onclick="toggleLevelMenu()">LEVEL <span id="lv-now">1</span> ▾</div>
     
     <div id="game-container"></div>
 
     <div class="footer">
-        <button onclick="initLevel(false)">重新開始本關</button>
+        <button id="undo-btn" class="btn-undo" onclick="undoMove()">Undo</button>
+        <button id="extra-btn" class="btn-extra" onclick="addExtraTube()">+Tube</button>
+        <button class="btn-reset" onclick="initLevel(false)">Reset</button>
+        <button id="sound-btn" class="btn-sound" onclick="toggleSound()">Sound: ON</button>
+    </div>
+
+    <div id="level-overlay">
+        <div class="overlay-title" style="color: white;">SELECT LEVEL</div>
+        <div class="level-grid" id="level-grid"></div>
+        <button style="margin-top: 30px; width: 150px; height: 45px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="toggleLevelMenu()">CLOSE</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <div class="overlay-card">
+            <div class="overlay-title">SUCCESS!</div>
+            
+            <div class="res-data-box">
+                <div class="res-line"><span>LEVEL</span><span id="res-lv"></span></div>
+                <div class="res-line"><span>TIME</span><span id="res-time"></span></div>
+                <div class="res-line"><span>MOVES</span><span id="res-moves"></span></div>
+                <div class="res-line"><span>UNDO USED</span><span id="res-undo"></span></div>
+            </div>
+
+            <button onclick="nextLevel()" class="res-btn">NEXT LEVEL</button>
+        </div>
     </div>
 
     <script>
         const CAPACITY = 4;
-        let currentLevel = 1;
-        let tubesData = [];
-        let selectedIdx = null;
-        let moveCount = 0;
-        let seconds = 0;
-        let timerInterval = null;
-        let isAnimating = false;
+        let currentLevel = 1, tubesData = [], history = [];
+        let selectedIdx = null, moveCount = 0, undoTotal = 0, extraUsed = 0, seconds = 0;
+        let timerInterval = null, isAnimating = false, soundEnabled = true;
+        let timeClickCount = 0, timeClickTimer = null;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // 初始化關卡選單
-        const selectEl = document.getElementById('level-select');
-        for(let i=1; i<=20; i++) {
-            let opt = document.createElement('option');
-            opt.value = i;
-            opt.innerText = `Level ${i}`;
-            selectEl.appendChild(opt);
+        function buildLevelGrid() {
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+            for(let i=1; i<=20; i++) {
+                const item = document.createElement('div');
+                item.className = `level-item ${i === currentLevel ? 'active' : ''}`;
+                item.innerText = i;
+                item.onclick = () => { currentLevel = i; initLevel(true); toggleLevelMenu(); };
+                grid.appendChild(item);
+            }
+        }
+
+        function toggleLevelMenu() {
+            const menu = document.getElementById('level-overlay');
+            const isVisible = window.getComputedStyle(menu).display === 'flex';
+            menu.style.display = isVisible ? 'none' : 'flex';
+            if(!isVisible) buildLevelGrid();
+        }
+
+        function testWinTrigger() {
+            timeClickCount++;
+            clearTimeout(timeClickTimer);
+            if (timeClickCount >= 3) { timeClickCount = 0; checkWin(true); }
+            timeClickTimer = setTimeout(() => { timeClickCount = 0; }, 500);
         }
 
         function initLevel(resetStats = true) {
-            if(resetStats) {
-                moveCount = 0;
-                seconds = 0;
-                document.getElementById('moves').innerText = '0';
-                startTimer();
-            }
+            if(resetStats) { moveCount = 0; seconds = 0; history = []; undoTotal = 0; extraUsed = 0; updateUI(); startTimer(); }
             selectedIdx = null;
-            document.getElementById('level-select').value = currentLevel;
+            document.getElementById('lv-now').innerText = currentLevel;
+            document.getElementById('extra-btn').disabled = false;
+            document.getElementById('undo-btn').disabled = true;
 
-            // 難度控制
             const colorCount = Math.min(3 + Math.floor((currentLevel - 1) / 2), 8);
             const tubeCount = colorCount + 2;
-
             let pool = [];
-            for(let i=1; i<=colorCount; i++) {
-                for(let j=0; j<CAPACITY; j++) pool.push(i);
-            }
+            for(let i=1; i<=colorCount; i++) { for(let j=0; j<CAPACITY; j++) pool.push(i); }
             pool.sort(() => Math.random() - 0.5);
-
             tubesData = Array.from({length: tubeCount}, () => []);
-            for(let i=0; i<pool.length; i++) {
-                tubesData[Math.floor(i/CAPACITY)].push(pool[i]);
-            }
+            for(let i=0; i<pool.length; i++) { tubesData[Math.floor(i/CAPACITY)].push(pool[i]); }
             render();
         }
 
-        function jumpToLevel(lv) {
-            currentLevel = parseInt(lv);
-            initLevel(true);
-        }
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                seconds++;
-                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const s = (seconds % 60).toString().padStart(2, '0');
-                document.getElementById('timer').innerText = `${m}:${s}`;
-            }, 1000);
+        function updateUI() {
+            document.getElementById('moves').innerText = moveCount;
+            document.getElementById('undo-now').innerText = undoTotal;
+            document.getElementById('extra-now').innerText = `${extraUsed}/1`;
+            document.getElementById('undo-btn').disabled = history.length === 0;
         }
 
         function render() {
@@ -223,10 +226,9 @@
                 tubeDiv.className = `tube ${selectedIdx === idx ? 'selected' : ''}`;
                 tubeDiv.id = `tube-${idx}`;
                 tubeDiv.onclick = () => handleTubeClick(idx);
-                balls.forEach(colorNum => {
-                    const ballDiv = document.createElement('div');
-                    ballDiv.className = `ball c-${colorNum}`;
-                    tubeDiv.appendChild(ballDiv);
+                balls.forEach(c => {
+                    const b = document.createElement('div'); b.className = `ball c-${c}`;
+                    tubeDiv.appendChild(b);
                 });
                 container.appendChild(tubeDiv);
             });
@@ -235,76 +237,115 @@
         async function handleTubeClick(idx) {
             if (isAnimating) return;
             if (selectedIdx === null) {
-                if (tubesData[idx].length > 0) {
-                    selectedIdx = idx; render();
-                }
+                if (tubesData[idx].length > 0) { selectedIdx = idx; playSound('pick'); render(); }
             } else {
-                if (selectedIdx === idx) {
-                    selectedIdx = null; render();
-                } else {
-                    const from = tubesData[selectedIdx];
-                    const to = tubesData[idx];
-                    const ball = from[from.length - 1];
-                    if (to.length < CAPACITY && (to.length === 0 || to[to.length-1] === ball)) {
+                if (selectedIdx === idx) { selectedIdx = null; render(); }
+                else {
+                    const from = tubesData[selectedIdx], to = tubesData[idx];
+                    if (to.length < CAPACITY && (to.length === 0 || to[to.length-1] === from[from.length-1])) {
+                        history.push(JSON.stringify(tubesData));
                         await animateBallMove(selectedIdx, idx);
                         to.push(from.pop());
-                        moveCount++;
-                        document.getElementById('moves').innerText = moveCount;
-                        selectedIdx = null; render();
+                        moveCount++; updateUI();
+                        selectedIdx = null; playSound('drop'); render();
                         checkWin();
                     } else {
                         selectedIdx = tubesData[idx].length > 0 ? idx : null;
+                        if(selectedIdx !== null) playSound('pick');
                         render();
                     }
                 }
             }
         }
 
-        function animateBallMove(fromIdx, toIdx) {
-            return new Promise(resolve => {
-                isAnimating = true;
-                const fromTubeEl = document.getElementById(`tube-${fromIdx}`);
-                const toTubeEl = document.getElementById(`tube-${toIdx}`);
-                const ballEl = fromTubeEl.lastElementChild;
-                const startRect = ballEl.getBoundingClientRect();
-                const dummy = ballEl.cloneNode(true);
-                dummy.classList.add('moving-ball');
-                dummy.style.left = startRect.left + 'px';
-                dummy.style.top = startRect.top + 'px';
-                document.body.appendChild(dummy);
-                ballEl.style.visibility = 'hidden';
-
-                const fRect = fromTubeEl.getBoundingClientRect();
-                const tRect = toTubeEl.getBoundingClientRect();
-                // 修正落點：底部 - 內距(8) - (目前球數+1)*球高度間距(45)
-                const targetTop = tRect.bottom - 8 - ((tubesData[toIdx].length + 1) * 45);
-
-                dummy.style.transform = `translateY(${fRect.top - startRect.top - 65}px)`;
-                setTimeout(() => {
-                    const moveX = tRect.left - fRect.left;
-                    dummy.style.transform = `translate(${moveX}px, ${fRect.top - startRect.top - 65}px)`;
-                    setTimeout(() => {
-                        dummy.style.transform = `translate(${moveX}px, ${targetTop - startRect.top}px)`;
-                        setTimeout(() => {
-                            dummy.remove();
-                            isAnimating = false;
-                            resolve();
-                        }, 350);
-                    }, 350);
-                }, 350);
-            });
+        function undoMove() {
+            if (history.length > 0 && !isAnimating) {
+                tubesData = JSON.parse(history.pop());
+                undoTotal++; updateUI(); render();
+            }
         }
 
-        function checkWin() {
-            const win = tubesData.every(t => t.length === 0 || (t.length === CAPACITY && t.every(b => b === t[0])));
+        function addExtraTube() {
+            if (extraUsed === 0) {
+                tubesData.push([]); extraUsed = 1; updateUI();
+                document.getElementById('extra-btn').disabled = true; render();
+            }
+        }
+
+        function checkWin(force = false) {
+            const win = force || tubesData.every(t => t.length === 0 || (t.length === CAPACITY && t.every(b => b === t[0])));
             if (win) {
                 clearInterval(timerInterval);
-                setTimeout(() => {
-                    alert(`恭喜！Level ${currentLevel} 通過！`);
-                    currentLevel++;
-                    initLevel(true);
-                }, 300);
+                playSound('win');
+                createWinFX();
+                
+                // 填充勝利畫面數據
+                document.getElementById('res-lv').innerText = currentLevel;
+                document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
+                document.getElementById('res-moves').innerText = moveCount;
+                document.getElementById('res-undo').innerText = undoTotal;
+                
+                document.getElementById('result-screen').style.display = 'flex';
             }
+        }
+
+        function nextLevel() {
+            document.getElementById('result-screen').style.display = 'none';
+            if (currentLevel < 20) { currentLevel++; initLevel(true); } else { alert("Congratulations! You cleared all 20 levels!"); currentLevel = 1; initLevel(true); }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                seconds++;
+                const m = Math.floor(seconds/60).toString().padStart(2,'0'), s = (seconds%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-btn').innerText = soundEnabled ? "Sound: ON" : "Sound: OFF";
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            const now = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            if(type==='pick'){ o.frequency.value = 440; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1); }
+            else if(type==='drop'){ o.frequency.value = 300; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1); }
+            else if(type==='win'){ [523, 659, 783].forEach((f,i)=>{ const o2=audioCtx.createOscillator(), g2=audioCtx.createGain(); o2.connect(g2); g2.connect(audioCtx.destination); o2.frequency.value = f; g2.gain.setValueAtTime(0.1, now+i*0.1); o2.start(now+i*0.1); o2.stop(now+i*0.1+0.4); }); }
+        }
+
+        const canvas = document.getElementById('fx-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resizeFX() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resizeFX; resizeFX();
+        function createWinFX() { for(let i=0; i<80; i++) particles.push({ x: canvas.width/2, y: canvas.height/2, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, c: `hsl(${Math.random()*360}, 100%, 50%)`, l: 1.0 }); updateFX(); }
+        function updateFX() { if (particles.length === 0) return; ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.l -= 0.015; ctx.globalAlpha = p.l; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill(); if(p.l <= 0) particles.splice(i, 1); }); requestAnimationFrame(updateFX); }
+
+        async function animateBallMove(fIdx, tIdx) {
+            return new Promise(resolve => {
+                isAnimating = true;
+                const fEl = document.getElementById(`tube-${fIdx}`), tEl = document.getElementById(`tube-${tIdx}`);
+                const ball = fEl.lastElementChild, sRect = ball.getBoundingClientRect();
+                const dummy = ball.cloneNode(true);
+                dummy.style.position = 'fixed'; dummy.style.left = sRect.left + 'px'; dummy.style.top = sRect.top + 'px'; dummy.style.zIndex = '1000'; dummy.style.transition = 'transform 0.3s ease';
+                document.body.appendChild(dummy);
+                ball.style.visibility = 'hidden';
+                const targetTop = tEl.getBoundingClientRect().bottom - 10 - ((tubesData[tIdx].length + 1) * 43);
+                setTimeout(() => {
+                    dummy.style.transform = `translateY(${fEl.getBoundingClientRect().top - sRect.top - 60}px)`;
+                    setTimeout(() => {
+                        dummy.style.transform = `translate(${tEl.getBoundingClientRect().left - fEl.getBoundingClientRect().left}px, ${fEl.getBoundingClientRect().top - sRect.top - 60}px)`;
+                        setTimeout(() => {
+                            dummy.style.transform = `translate(${tEl.getBoundingClientRect().left - fEl.getBoundingClientRect().left}px, ${targetTop - sRect.top}px)`;
+                            setTimeout(() => { dummy.remove(); isAnimating = false; resolve(); }, 300);
+                        }, 300);
+                    }, 300);
+                }, 10);
+            });
         }
 
         initLevel();
