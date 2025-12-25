@@ -73,12 +73,18 @@
         .c-4 { --color-light: #fcc419; } .c-5 { --color-light: #ae3ec9; } .c-6 { --color-light: #20c997; }
         .c-7 { --color-light: #f783ac; } .c-8 { --color-light: #94a3b8; }
 
-        /* --- Footer Controls --- */
-        .footer { display: flex; justify-content: center; gap: 5px; margin-bottom: 30px; width: 98%; max-width: 500px; }
+        /* --- Footer Controls (Width Adjusted) --- */
+        .footer { 
+            display: flex; justify-content: space-between; gap: 4px; 
+            margin-bottom: 30px; width: 95%; max-width: 480px; 
+        }
         .footer button {
-            flex: 1; height: 42px; border: none; color: white; font-weight: bold;
-            border-radius: 6px; cursor: pointer; font-size: 0.65rem;
+            width: 18%; /* 縮小按鈕寬度 */
+            height: 42px; border: none; color: white; font-weight: bold;
+            border-radius: 6px; cursor: pointer; font-size: 0.6rem;
             text-transform: uppercase; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 2px;
         }
         .footer button:disabled { background-color: var(--btn-disabled) !important; color: #64748b; cursor: not-allowed; opacity: 0.6; }
         .btn-undo { background: var(--btn-undo); }
@@ -227,22 +233,12 @@
         }
 
         function initLevel(resetStats = true) {
-            // 重置核心狀態
             extraUsed = 0; 
             history = [];
             selectedIdx = null;
-
-            if(resetStats) { 
-                moveCount = 0; seconds = 0; undoTotal = 0; 
-                startTimer(); 
-            }
-            
-            // 重要：先更新 UI 文字與按鈕狀態，確保顯示恢復 0/1
+            if(resetStats) { moveCount = 0; seconds = 0; undoTotal = 0; startTimer(); }
             updateUI(); 
-            
             document.getElementById('lv-now').innerText = currentLevel;
-
-            // 生成關卡數據
             const colorCount = Math.min(3 + Math.floor((currentLevel - 1) / 2), 8);
             const tubeCount = colorCount + 2;
             let pool = [];
@@ -256,10 +252,7 @@
         function updateUI() {
             document.getElementById('moves').innerText = moveCount;
             document.getElementById('undo-now').innerText = undoTotal;
-            // 修正點：確保數據看板文字與變數同步
             document.getElementById('extra-now').innerText = `${extraUsed}/1`;
-            
-            // 按鈕灰色/亮色狀態同步
             document.getElementById('undo-btn').disabled = history.length === 0;
             document.getElementById('extra-btn').disabled = extraUsed >= 1;
         }
@@ -315,7 +308,7 @@
             if (extraUsed === 0) {
                 tubesData.push([]); 
                 extraUsed = 1; 
-                updateUI(); // 點擊後立即更新顯示為 1/1 並變灰
+                updateUI();
                 render();
             }
         }
