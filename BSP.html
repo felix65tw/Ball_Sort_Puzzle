@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Sort - Pro Version</title>
+    <title>Ball Sort - Professional Edition</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
             --tile-bg: #16213e;
             --accent: #2ed573;
             --text-main: #e0e0e0;
-            --ball-size: 40px;
-            --tube-w: 56px;
-            --tube-h: 210px;
+            --ball-size: 38px;
+            --tube-w: 54px;
+            --tube-h: 200px;
             --btn-undo: #3498db;
             --btn-extra: #f39c12;
             --btn-reset: #e74c3c;
             --btn-sound: #8e44ad;
+            --btn-help: #95a5a6;
             --btn-disabled: #334155;
+            --highlight: #f1c40f;
         }
 
         body {
@@ -34,37 +36,37 @@
             justify-content: center; gap: 6px; width: 95%; max-width: 500px;
         }
         .stat-tile {
-            background: var(--tile-bg); min-width: 65px; padding: 12px 4px;
+            background: var(--tile-bg); min-width: 60px; padding: 10px 4px;
             border-radius: 6px; text-align: center; flex: 1;
             border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
         }
-        .stat-label { display: block; font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; pointer-events: none; }
-        .stat-val { display: block; font-size: 18px; font-weight: bold; color: #f1c40f; pointer-events: none; }
+        .stat-label { display: block; font-size: 9px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; pointer-events: none; }
+        .stat-val { display: block; font-size: 16px; font-weight: bold; color: var(--highlight); pointer-events: none; }
 
         .level-display {
-            margin-top: 15px; padding: 8px 25px; background: #2c3e50;
+            margin-top: 10px; padding: 6px 20px; background: #2c3e50;
             border-radius: 20px; font-weight: bold; color: #eee;
-            cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: 0.2s;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem;
         }
 
         /* --- Game Area --- */
         #game-container {
             display: flex; flex-wrap: wrap; justify-content: center;
-            align-content: center; gap: 15px; padding: 10px 20px;
+            align-content: center; gap: 12px; padding: 10px;
             flex-grow: 1; width: 100%;
         }
         .tube {
             width: var(--tube-w); height: var(--tube-h);
             border: 3px solid rgba(255,255,255,0.25); border-top: none;
-            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
             display: flex; flex-direction: column-reverse; align-items: center;
-            padding-bottom: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
+            padding-bottom: 8px; cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
         }
-        .tube.selected { transform: translateY(-15px); border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+        .tube.selected { transform: translateY(-12px); border-color: var(--highlight); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
 
         .ball {
             width: var(--ball-size); height: var(--ball-size); border-radius: 50%;
-            margin-bottom: 3px; background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
+            margin-bottom: 2px; background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
             box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3); flex-shrink: 0;
         }
         .c-1 { --color-light: #ff6b6b; } .c-2 { --color-light: #4dabf7; } .c-3 { --color-light: #51cf66; } 
@@ -72,24 +74,29 @@
         .c-7 { --color-light: #f783ac; } .c-8 { --color-light: #94a3b8; }
 
         /* --- Footer Controls --- */
-        .footer { display: flex; justify-content: center; gap: 8px; margin-bottom: 35px; width: 95%; max-width: 500px; }
+        .footer { display: flex; justify-content: center; gap: 5px; margin-bottom: 30px; width: 98%; max-width: 500px; }
         .footer button {
-            flex: 1; height: 45px; border: none; color: white; font-weight: bold;
-            border-radius: 6px; cursor: pointer; font-size: 0.7rem;
-            text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s;
+            flex: 1; height: 42px; border: none; color: white; font-weight: bold;
+            border-radius: 6px; cursor: pointer; font-size: 0.65rem;
+            text-transform: uppercase; transition: 0.2s;
         }
-        .footer button:disabled { background-color: var(--btn-disabled) !important; color: #64748b; cursor: not-allowed; opacity: 0.7; }
+        .footer button:disabled { background-color: var(--btn-disabled) !important; color: #64748b; cursor: not-allowed; opacity: 0.6; }
         .btn-undo { background: var(--btn-undo); }
         .btn-extra { background: var(--btn-extra); }
         .btn-reset { background: var(--btn-reset); }
         .btn-sound { background: var(--btn-sound); }
+        .btn-help { background: var(--btn-help); }
 
-        /* --- Level Selector Overlay --- */
-        #level-overlay {
+        /* --- Overlays --- */
+        .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(26, 26, 46, 0.98); z-index: 4000;
+            background: rgba(10, 10, 25, 0.98); z-index: 4000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
+        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 88%; max-width: 340px; text-align: center; border: 2px solid var(--accent); position: relative; }
+        .overlay-title { font-size: 1.6rem; font-weight: bold; margin-bottom: 15px; color: var(--accent); letter-spacing: 1px; }
+
+        /* --- Level Grid (Legacy Shape) --- */
         .level-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
             padding: 20px; width: 85%; max-width: 350px;
@@ -98,21 +105,25 @@
             aspect-ratio: 1; background: var(--tile-bg); border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; font-weight: bold; color: #eee; cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;
         }
-        .level-item.active { border: 2px solid var(--f1c40f); color: var(--f1c40f); }
+        .level-item.active { 
+            border: 2px solid var(--highlight); 
+            color: var(--highlight); 
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+            transform: scale(1.05);
+        }
 
-        /* --- Result Screen --- */
-        .result-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26,26,46,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
-        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .overlay-title { font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: var(--accent); letter-spacing: 2px; }
-        
-        .res-data-box { margin-bottom: 25px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; }
-        .res-line { display: flex; justify-content: space-between; margin: 10px 0; color: #94a3b8; font-weight: bold; font-size: 0.9rem; }
-        .res-line span:last-child { color: #f1c40f; }
+        /* --- Help Table --- */
+        .help-table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #e0e0e0; font-size: 0.8rem; }
+        .help-table th, .help-table td { padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .help-table th { color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; }
 
-        .res-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; color: #1a1a2e; transition: 0.2s; }
-        .res-btn:active { transform: scale(0.98); }
+        /* --- Result Data --- */
+        .res-data-box { margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; }
+        .res-line { display: flex; justify-content: space-between; margin: 8px 0; color: #94a3b8; font-weight: bold; font-size: 0.85rem; }
+        .res-line span:last-child { color: var(--highlight); }
+        .res-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #1a1a2e; }
 
         #fx-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 2500; }
     </style>
@@ -136,27 +147,47 @@
         <button id="undo-btn" class="btn-undo" onclick="undoMove()">Undo</button>
         <button id="extra-btn" class="btn-extra" onclick="addExtraTube()">+Tube</button>
         <button class="btn-reset" onclick="initLevel(false)">Reset</button>
-        <button id="sound-btn" class="btn-sound" onclick="toggleSound()">Sound: ON</button>
+        <button id="sound-btn" class="btn-sound" onclick="toggleSound()">Sound</button>
+        <button class="btn-help" onclick="toggleHelp()">Help</button>
     </div>
 
-    <div id="level-overlay">
-        <div class="overlay-title" style="color: white;">SELECT LEVEL</div>
+    <div id="help-overlay" class="overlay">
+        <div class="overlay-card">
+            <div class="overlay-title">LEVEL DIFFICULTY</div>
+            <table class="help-table">
+                <thead>
+                    <tr><th>Levels</th><th>Colors</th><th>Tubes</th><th>Rank</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1 - 2</td><td>3</td><td>5</td><td>Entry</td></tr>
+                    <tr><td>3 - 4</td><td>4</td><td>6</td><td>Novice</td></tr>
+                    <tr><td>5 - 6</td><td>5</td><td>7</td><td>Junior</td></tr>
+                    <tr><td>7 - 8</td><td>6</td><td>8</td><td>Medium</td></tr>
+                    <tr><td>9 - 10</td><td>7</td><td>9</td><td>Senior</td></tr>
+                    <tr><td>11 - 20</td><td>8</td><td>10</td><td>Master</td></tr>
+                </tbody>
+            </table>
+            <button style="margin-top: 20px;" class="res-btn" onclick="toggleHelp()">GOT IT</button>
+        </div>
+    </div>
+
+    <div id="level-overlay" class="overlay">
+        <div class="overlay-title" style="color:white; margin-bottom: 10px;">SELECT LEVEL</div>
         <div class="level-grid" id="level-grid"></div>
         <button style="margin-top: 30px; width: 150px; height: 45px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="toggleLevelMenu()">CLOSE</button>
     </div>
 
-    <div id="result-screen" class="result-screen">
+    <div id="result-screen" class="overlay">
         <div class="overlay-card">
             <div class="overlay-title">SUCCESS!</div>
-            
             <div class="res-data-box">
-                <div class="res-line"><span>LEVEL</span><span id="res-lv"></span></div>
-                <div class="res-line"><span>TIME</span><span id="res-time"></span></div>
+                <div class="res-line"><span>LEVEL COMPLETED</span><span id="res-lv"></span></div>
+                <div class="res-line"><span>TIME SPENT</span><span id="res-time"></span></div>
                 <div class="res-line"><span>MOVES</span><span id="res-moves"></span></div>
-                <div class="res-line"><span>UNDO USED</span><span id="res-undo"></span></div>
+                <div class="res-line"><span>UNDO COUNT</span><span id="res-undo"></span></div>
+                <div class="res-line"><span>EXTRA TUBE</span><span id="res-extra"></span></div>
             </div>
-
-            <button onclick="nextLevel()" class="res-btn">NEXT LEVEL</button>
+            <button id="next-btn" onclick="nextLevel()" class="res-btn">CONTINUE</button>
         </div>
     </div>
 
@@ -182,9 +213,18 @@
 
         function toggleLevelMenu() {
             const menu = document.getElementById('level-overlay');
-            const isVisible = window.getComputedStyle(menu).display === 'flex';
-            menu.style.display = isVisible ? 'none' : 'flex';
-            if(!isVisible) buildLevelGrid();
+            const isVisible = menu.style.display === 'flex';
+            if(!isVisible) {
+                buildLevelGrid();
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        function toggleHelp() {
+            const menu = document.getElementById('help-overlay');
+            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
         }
 
         function testWinTrigger() {
@@ -275,23 +315,23 @@
         function checkWin(force = false) {
             const win = force || tubesData.every(t => t.length === 0 || (t.length === CAPACITY && t.every(b => b === t[0])));
             if (win) {
-                clearInterval(timerInterval);
-                playSound('win');
-                createWinFX();
-                
-                // 填充勝利畫面數據
+                clearInterval(timerInterval); playSound('win'); createWinFX();
                 document.getElementById('res-lv').innerText = currentLevel;
                 document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
                 document.getElementById('res-moves').innerText = moveCount;
                 document.getElementById('res-undo').innerText = undoTotal;
+                document.getElementById('res-extra').innerText = (extraUsed > 0) ? "Used" : "Not Used";
                 
+                const btn = document.getElementById('next-btn');
+                btn.innerText = (currentLevel >= 20) ? "BACK TO START" : "CONTINUE";
                 document.getElementById('result-screen').style.display = 'flex';
             }
         }
 
         function nextLevel() {
             document.getElementById('result-screen').style.display = 'none';
-            if (currentLevel < 20) { currentLevel++; initLevel(true); } else { alert("Congratulations! You cleared all 20 levels!"); currentLevel = 1; initLevel(true); }
+            if (currentLevel < 20) { currentLevel++; } else { currentLevel = 1; }
+            initLevel(true);
         }
 
         function startTimer() {
@@ -305,7 +345,7 @@
 
         function toggleSound() {
             soundEnabled = !soundEnabled;
-            document.getElementById('sound-btn').innerText = soundEnabled ? "Sound: ON" : "Sound: OFF";
+            document.getElementById('sound-btn').style.opacity = soundEnabled ? "1" : "0.5";
         }
 
         function playSound(type) {
@@ -334,11 +374,11 @@
                 dummy.style.position = 'fixed'; dummy.style.left = sRect.left + 'px'; dummy.style.top = sRect.top + 'px'; dummy.style.zIndex = '1000'; dummy.style.transition = 'transform 0.3s ease';
                 document.body.appendChild(dummy);
                 ball.style.visibility = 'hidden';
-                const targetTop = tEl.getBoundingClientRect().bottom - 10 - ((tubesData[tIdx].length + 1) * 43);
+                const targetTop = tEl.getBoundingClientRect().bottom - 8 - ((tubesData[tIdx].length + 1) * 40);
                 setTimeout(() => {
-                    dummy.style.transform = `translateY(${fEl.getBoundingClientRect().top - sRect.top - 60}px)`;
+                    dummy.style.transform = `translateY(${fEl.getBoundingClientRect().top - sRect.top - 50}px)`;
                     setTimeout(() => {
-                        dummy.style.transform = `translate(${tEl.getBoundingClientRect().left - fEl.getBoundingClientRect().left}px, ${fEl.getBoundingClientRect().top - sRect.top - 60}px)`;
+                        dummy.style.transform = `translate(${tEl.getBoundingClientRect().left - fEl.getBoundingClientRect().left}px, ${fEl.getBoundingClientRect().top - sRect.top - 50}px)`;
                         setTimeout(() => {
                             dummy.style.transform = `translate(${tEl.getBoundingClientRect().left - fEl.getBoundingClientRect().left}px, ${targetTop - sRect.top}px)`;
                             setTimeout(() => { dummy.remove(); isAnimating = false; resolve(); }, 300);
