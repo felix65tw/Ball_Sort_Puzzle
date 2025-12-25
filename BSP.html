@@ -96,7 +96,6 @@
         .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 88%; max-width: 340px; text-align: center; border: 2px solid var(--accent); position: relative; }
         .overlay-title { font-size: 1.6rem; font-weight: bold; margin-bottom: 15px; color: var(--accent); letter-spacing: 1px; }
 
-        /* --- Level Grid (Legacy Shape) --- */
         .level-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
             padding: 20px; width: 85%; max-width: 350px;
@@ -114,12 +113,10 @@
             transform: scale(1.05);
         }
 
-        /* --- Help Table --- */
         .help-table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #e0e0e0; font-size: 0.8rem; }
         .help-table th, .help-table td { padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .help-table th { color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; }
 
-        /* --- Result Data --- */
         .res-data-box { margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; }
         .res-line { display: flex; justify-content: space-between; margin: 8px 0; color: #94a3b8; font-weight: bold; font-size: 0.85rem; }
         .res-line span:last-child { color: var(--highlight); }
@@ -214,12 +211,7 @@
         function toggleLevelMenu() {
             const menu = document.getElementById('level-overlay');
             const isVisible = menu.style.display === 'flex';
-            if(!isVisible) {
-                buildLevelGrid();
-                menu.style.display = 'flex';
-            } else {
-                menu.style.display = 'none';
-            }
+            if(!isVisible) { buildLevelGrid(); menu.style.display = 'flex'; } else { menu.style.display = 'none'; }
         }
 
         function toggleHelp() {
@@ -235,12 +227,22 @@
         }
 
         function initLevel(resetStats = true) {
-            if(resetStats) { moveCount = 0; seconds = 0; history = []; undoTotal = 0; extraUsed = 0; updateUI(); startTimer(); }
+            // 重置核心狀態
+            extraUsed = 0; 
+            history = [];
             selectedIdx = null;
-            document.getElementById('lv-now').innerText = currentLevel;
-            document.getElementById('extra-btn').disabled = false;
-            document.getElementById('undo-btn').disabled = true;
 
+            if(resetStats) { 
+                moveCount = 0; seconds = 0; undoTotal = 0; 
+                startTimer(); 
+            }
+            
+            // 重要：先更新 UI 文字與按鈕狀態，確保顯示恢復 0/1
+            updateUI(); 
+            
+            document.getElementById('lv-now').innerText = currentLevel;
+
+            // 生成關卡數據
             const colorCount = Math.min(3 + Math.floor((currentLevel - 1) / 2), 8);
             const tubeCount = colorCount + 2;
             let pool = [];
@@ -254,8 +256,12 @@
         function updateUI() {
             document.getElementById('moves').innerText = moveCount;
             document.getElementById('undo-now').innerText = undoTotal;
+            // 修正點：確保數據看板文字與變數同步
             document.getElementById('extra-now').innerText = `${extraUsed}/1`;
+            
+            // 按鈕灰色/亮色狀態同步
             document.getElementById('undo-btn').disabled = history.length === 0;
+            document.getElementById('extra-btn').disabled = extraUsed >= 1;
         }
 
         function render() {
@@ -307,8 +313,10 @@
 
         function addExtraTube() {
             if (extraUsed === 0) {
-                tubesData.push([]); extraUsed = 1; updateUI();
-                document.getElementById('extra-btn').disabled = true; render();
+                tubesData.push([]); 
+                extraUsed = 1; 
+                updateUI(); // 點擊後立即更新顯示為 1/1 並變灰
+                render();
             }
         }
 
@@ -321,7 +329,6 @@
                 document.getElementById('res-moves').innerText = moveCount;
                 document.getElementById('res-undo').innerText = undoTotal;
                 document.getElementById('res-extra').innerText = (extraUsed > 0) ? "Used" : "Not Used";
-                
                 const btn = document.getElementById('next-btn');
                 btn.innerText = (currentLevel >= 20) ? "BACK TO START" : "CONTINUE";
                 document.getElementById('result-screen').style.display = 'flex';
@@ -350,11 +357,35 @@
 
         function playSound(type) {
             if (!soundEnabled) return;
-            const now = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.connect(g); g.connect(audioCtx.destination);
-            if(type==='pick'){ o.frequency.value = 440; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1); }
-            else if(type==='drop'){ o.frequency.value = 300; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1); }
-            else if(type==='win'){ [523, 659, 783].forEach((f,i)=>{ const o2=audioCtx.createOscillator(), g2=audioCtx.createGain(); o2.connect(g2); g2.connect(audioCtx.destination); o2.frequency.value = f; g2.gain.setValueAtTime(0.1, now+i*0.1); o2.start(now+i*0.1); o2.stop(now+i*0.1+0.4); }); }
+            const now = audioCtx.currentTime;
+            if(type==='pick'){
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.connect(g); g.connect(audioCtx.destination);
+                o.frequency.value = 440; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1);
+            }
+            else if(type==='drop'){
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.connect(g); g.connect(audioCtx.destination);
+                o.frequency.value = 300; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1);
+            }
+            else if(type==='win'){
+                const freqs = [523.25, 659.25, 783.99]; 
+                freqs.forEach((f, i) => {
+                    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.value = f;
+                    const startTime = now + (i * 0.15);
+                    if(i === freqs.length - 1) {
+                        const duration = 1.2;
+                        g.gain.setValueAtTime(0.1, startTime);
+                        g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                        o.start(startTime); o.stop(startTime + duration);
+                    } else {
+                        g.gain.setValueAtTime(0.1, startTime);
+                        o.start(startTime); o.stop(startTime + 0.15);
+                    }
+                });
+            }
         }
 
         const canvas = document.getElementById('fx-canvas');
