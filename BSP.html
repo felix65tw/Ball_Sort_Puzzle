@@ -55,12 +55,14 @@
             align-content: center; gap: 12px; padding: 10px;
             flex-grow: 1; width: 100%;
         }
-        .tube {
+				.tube {
             width: var(--tube-w); height: var(--tube-h);
             border: 3px solid rgba(255,255,255,0.25); border-top: none;
             border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
             display: flex; flex-direction: column-reverse; align-items: center;
             padding-bottom: 8px; cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
+            /* 將瓶子向上移動高度的四分之一 (200px / 4 = 50px) */
+            transform: translateY(-50px);
         }
         .tube.selected { transform: translateY(-12px); border-color: var(--highlight); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
 
