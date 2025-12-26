@@ -53,9 +53,12 @@
                 z-index: 1000;
             }
             #game-container {
-                padding-bottom: 320px; 
+                padding-top: 100px; 
+                padding-bottom: 220px; 
+                max-width: 360px; /* 限制寬度使其只能放約 6 個瓶子 */
+                row-gap: 40px;    /* 顯著擴大第一排與第二排的間距 */
             }
-            .overlay-card { width: 88%; max-width: 340px; } /* 縮小 10% */
+            .overlay-card { width: 88%; max-width: 340px; }
         }
 
         /* ----------------------------------------------------------- */
@@ -71,7 +74,7 @@
                 max-width: 600px;
             }
             #game-container { flex-grow: 1; }
-            .overlay-card { width: 400px; } /* 網頁版維持原本寬度 */
+            .overlay-card { width: 400px; }
         }
 
         /* 公共樣式 */
@@ -87,8 +90,19 @@
         .stat-label { display: block; font-size: 9px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; pointer-events: none; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; color: var(--highlight); pointer-events: none; }
 
+        .difficulty-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 12px;
+        }
+        .version-tag {
+            font-size: 0.8rem;
+            color: #556677;
+            font-weight: bold;
+        }
         .difficulty-display {
-            margin-top: 12px; padding: 8px 25px; background: #2c3e50;
+            padding: 8px 25px; background: #2c3e50;
             border-radius: 6px; font-weight: bold; color: #eee;
             cursor: pointer; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem;
             text-transform: uppercase;
@@ -165,7 +179,11 @@
         <div class="stat-tile"><span class="stat-label">Extra</span><span id="extra-now" class="stat-val">0/1</span></div>
     </div>
 
-    <div class="difficulty-display" onclick="toggleDiffMenu()"><span id="diff-now-label">ENTRY</span> ▾</div>
+    <div class="difficulty-wrapper">
+        <span id="app-version" class="version-tag"></span>
+        <div class="difficulty-display" onclick="toggleDiffMenu()"><span id="diff-now-label">ENTRY</span> ▾</div>
+    </div>
+    
     <div id="game-container"></div>
     <div class="footer">
         <button id="undo-btn" class="btn-undo disabled" onclick="undoMove()">Undo</button>
@@ -180,6 +198,8 @@
     <div id="result-screen" class="overlay"><div class="overlay-card"><div class="overlay-title">SUCCESS!</div><div class="res-data-box"><div class="res-line"><span>RANK</span><span id="res-diff"></span></div><div class="res-line"><span>TIME</span><span id="res-time"></span></div><div class="res-line"><span>MOVES</span><span id="res-moves"></span></div><div class="res-line"><span>UNDO</span><span id="res-undo"></span></div><div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div></div><button onclick="closeResult()" class="res-btn">CONTINUE</button></div></div>
 
     <script>
+        const APP_VERSION = "0.38"; // 版本號變數
+
         const DIFF_SETTINGS = [
             { id: 0, label: "ENTRY", color: 3, cap: 4, tubes: 4 },
             { id: 1, label: "JUNIOR", color: 4, cap: 4, tubes: 5 },
@@ -196,6 +216,9 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function initLevel(reset = true) {
+            // 初始化版本號顯示
+            document.getElementById('app-version').innerText = APP_VERSION;
+            
             isAiMode = false; extraUsed = 0; history = []; selectedIdx = null;
             if(reset) { moveCount = 0; seconds = 0; undoTotal = 0; startTimer(); }
             const config = DIFF_SETTINGS[currentDiffIdx];
