@@ -73,24 +73,37 @@
         .c-4 { --color-light: #fcc419; } .c-5 { --color-light: #ae3ec9; } .c-6 { --color-light: #20c997; }
         .c-7 { --color-light: #f783ac; } .c-8 { --color-light: #94a3b8; }
 
-        /* --- Footer Controls (Refined spacing) --- */
+        /* --- Footer Controls --- */
         .footer { 
             display: flex; 
-            justify-content: center; /* 改為置中 */
+            justify-content: center; 
             gap: 2px; 
             margin-bottom: 30px; 
             width: 100%; 
             max-width: 500px; 
         }
         .footer button {
-            width: 18%; /* 維持縮小後的寬度 */
-            margin: 0 2px; /* 增加固定間距，模擬原本的間隔感 */
+            width: 18%; /* 網頁版寬度 */
+            margin: 0 2px;
             height: 42px; border: none; color: white; font-weight: bold;
             border-radius: 6px; cursor: pointer; font-size: 0.6rem;
             text-transform: uppercase; transition: 0.2s;
             display: flex; align-items: center; justify-content: center;
             padding: 0 2px;
         }
+
+        /* --- 手機版專屬樣式 --- */
+        @media screen and (max-width: 768px) {
+            .footer {
+                position: absolute;
+                bottom: 50px; /* 從最下方往上 50px */
+                margin-bottom: 0;
+            }
+            .footer button {
+                width: 17.1%; /* 整體寬度縮小 5% */
+            }
+        }
+
         .footer button:disabled { background-color: var(--btn-disabled) !important; color: #64748b; cursor: not-allowed; opacity: 0.6; }
         .btn-undo { background: var(--btn-undo); }
         .btn-extra { background: var(--btn-extra); }
