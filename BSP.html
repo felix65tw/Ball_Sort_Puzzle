@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Sort - Professional Edition</title>
+    <title>Ball Sort - Ultra AI Edition</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
             --tile-bg: #16213e;
             --accent: #2ed573;
             --text-main: #e0e0e0;
-            --ball-size: 38px;
+            --ball-size: 40px; 
             --tube-w: 54px;
-            --tube-h: 200px;
+            --tube-h: 245px; 
             --btn-undo: #3498db;
             --btn-extra: #f39c12;
             --btn-reset: #e74c3c;
@@ -31,7 +31,7 @@
         }
 
         .score-container {
-            margin-top: 20px; display: flex; flex-wrap: wrap;
+            margin-top: 10px; display: flex; flex-wrap: wrap;
             justify-content: center; gap: 6px; width: 95%; max-width: 500px;
         }
         .stat-tile {
@@ -42,15 +42,16 @@
         .stat-label { display: block; font-size: 9px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; pointer-events: none; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; color: var(--highlight); pointer-events: none; }
 
-        .level-display {
+        .difficulty-display {
             padding: 6px 20px; background: #2c3e50;
             border-radius: 20px; font-weight: bold; color: #eee;
             cursor: pointer; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem;
+            text-transform: uppercase;
         }
 
         #game-container {
             display: flex; flex-wrap: wrap; justify-content: center;
-            align-content: center; gap: 12px; padding: 10px;
+            align-content: center; gap: 10px; padding: 10px;
             flex-grow: 1; width: 100%;
         }
         .tube {
@@ -59,40 +60,34 @@
             border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
             display: flex; flex-direction: column-reverse; align-items: center;
             padding-bottom: 8px; cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
-            transform: translateY(-50px);
+            transform: translateY(-20px);
         }
-        .tube.selected { 
-            transform: translateY(-62px); 
-            border-color: var(--highlight); 
-            box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); 
-        }
+        .tube.selected { transform: translateY(-32px); border-color: var(--highlight); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
 
         .ball {
             width: var(--ball-size); height: var(--ball-size); border-radius: 50%;
             margin-bottom: 2px; background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
             box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3); flex-shrink: 0;
         }
-        .c-1 { --color-light: #ff6b6b; } .c-2 { --color-light: #4dabf7; } .c-3 { --color-light: #51cf66; } 
-        .c-4 { --color-light: #fcc419; } .c-5 { --color-light: #ae3ec9; } .c-6 { --color-light: #20c997; }
-        .c-7 { --color-light: #f783ac; } .c-8 { --color-light: #94a3b8; }
+        .c-1 { --color-light: #ff3333; }
+        .c-2 { --color-light: #3399ff; }
+        .c-3 { --color-light: #2ecc71; }
+        .c-4 { --color-light: #f1c40f; }
+        .c-5 { --color-light: #9b59b6; }
+        .c-6 { --color-light: #e67e22; }
+        .c-7 { --color-light: #1abc9c; }
+        .c-8 { --color-light: #ecf0f1; }
 
-        .footer { 
-            display: flex; justify-content: center; gap: 2px; margin-bottom: 30px; width: 100%; max-width: 500px; 
-        }
+        .footer { display: flex; justify-content: center; gap: 2px; margin-bottom: 30px; width: 100%; max-width: 500px; }
         .footer button {
             width: 18%; height: 42px; border: none; color: white; font-weight: bold;
             border-radius: 6px; cursor: pointer; font-size: 0.6rem;
             text-transform: uppercase; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; padding: 0 2px;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        @media screen and (max-width: 768px) {
-            .footer { position: absolute; bottom: 50px; margin-bottom: 0; padding-bottom: 10px; border-bottom: 2px solid white; }
-            .footer button { width: 17.1%; }
-        }
-
-        .footer button:disabled { background-color: var(--btn-disabled) !important; color: #64748b; cursor: not-allowed; opacity: 0.6; }
         .btn-undo { background: var(--btn-undo); }
+        .btn-undo.disabled { background: var(--btn-disabled); cursor: default; }
         .btn-extra { background: var(--btn-extra); }
         .btn-reset { background: var(--btn-reset); }
         .btn-sound { background: var(--btn-sound); }
@@ -100,10 +95,10 @@
 
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 25, 0.98); z-index: 4000;
+            background: rgba(10, 10, 25, 0.95); z-index: 4000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 88%; max-width: 340px; text-align: center; border: 2px solid var(--accent); position: relative; }
+        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 88%; max-width: 340px; text-align: center; border: 2px solid var(--accent); }
         .overlay-title { font-size: 1.6rem; font-weight: bold; margin-bottom: 15px; color: var(--accent); letter-spacing: 1px; }
 
         .help-table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #e0e0e0; font-size: 0.8rem; }
@@ -115,34 +110,28 @@
         .res-line span:last-child { color: var(--highlight); }
         .res-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #1a1a2e; }
 
-        .level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 20px; width: 85%; max-width: 350px; }
-        .level-item { aspect-ratio: 1; background: var(--tile-bg); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: #eee; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
-        .level-item.active { border: 2px solid var(--highlight); color: var(--highlight); box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); transform: scale(1.05); }
-
-        #fx-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 2500; }
+        /* 修改後的難易度選單 UI：更小更精緻 */
+        .diff-list { display: flex; flex-direction: column; gap: 5px; width: 180px; }
+        .diff-item { background: var(--tile-bg); padding: 12px; border-radius: 6px; font-weight: bold; color: #eee; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; text-transform: uppercase; font-size: 0.85rem; }
+        .diff-item.active { border: 2px solid var(--highlight); color: var(--highlight); }
     </style>
 </head>
 <body>
 
-    <canvas id="fx-canvas"></canvas>
-
     <div class="score-container">
-        <div class="stat-tile" onclick="testWinTrigger()"><span class="stat-label">Time</span><span id="timer" class="stat-val">00:00</span></div>
+        <div class="stat-tile" onclick="detectWinTrigger()"><span class="stat-label">Time</span><span id="timer" class="stat-val">00:00</span></div>
         <div class="stat-tile"><span class="stat-label">Moves</span><span id="moves" class="stat-val">0</span></div>
-        <div class="stat-tile"><span class="stat-label">Undo</span><span id="undo-now" class="stat-val">0</span></div>
+        <div class="stat-tile" id="ai-trigger" onclick="detectAiTrigger()"><span class="stat-label">Undo</span><span id="undo-now" class="stat-val">0</span></div>
         <div class="stat-tile"><span class="stat-label">Extra</span><span id="extra-now" class="stat-val">0/1</span></div>
     </div>
 
-    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;">
-        <div class="level-display" onclick="toggleLevelMenu()">LEVEL <span id="lv-now">1</span> ▾</div>
-        <span id="version-display" style="font-weight: bold; color: var(--highlight);"></span>
-    </div>
+    <div style="margin-top: 10px;"><div class="difficulty-display" onclick="toggleDiffMenu()"><span id="diff-now-label">ENTRY</span> ▾</div></div>
     
     <div id="game-container"></div>
 
     <div class="footer">
-        <button id="undo-btn" class="btn-undo" onclick="undoMove()">Undo</button>
-        <button id="extra-btn" class="btn-extra" onclick="addExtraTube()">+Tube</button>
+        <button id="undo-btn" class="btn-undo disabled" onclick="undoMove()">Undo</button>
+        <button class="btn-extra" onclick="addExtraTube()">+Tube</button>
         <button class="btn-reset" onclick="initLevel(false)">Reset</button>
         <button id="sound-btn" class="btn-sound" onclick="toggleSound()">Sound</button>
         <button class="btn-help" onclick="toggleHelp()">Help</button>
@@ -150,245 +139,264 @@
 
     <div id="help-overlay" class="overlay">
         <div class="overlay-card">
-            <div class="overlay-title">LEVEL DIFFICULTY</div>
+            <div class="overlay-title">Difficulty Table</div>
             <table class="help-table">
-                <thead>
-                    <tr><th>Levels</th><th>Colors</th><th>Tubes</th><th>Rank</th></tr>
-                </thead>
+                <thead><tr><th>Rank</th><th>Colors</th><th>Balls</th><th>Tubes</th></tr></thead>
                 <tbody>
-                    <tr><td>1 - 2</td><td>3</td><td>5</td><td>Entry</td></tr>
-                    <tr><td>3 - 4</td><td>4</td><td>6</td><td>Novice</td></tr>
-                    <tr><td>5 - 6</td><td>5</td><td>7</td><td>Junior</td></tr>
-                    <tr><td>7 - 8</td><td>6</td><td>8</td><td>Medium</td></tr>
-                    <tr><td>9 - 10</td><td>7</td><td>9</td><td>Senior</td></tr>
-                    <tr><td>11 - 20</td><td>8</td><td>10</td><td>Master</td></tr>
+                    <tr><td>ENTRY</td><td>3</td><td>4</td><td>4</td></tr>
+                    <tr><td>JUNIOR</td><td>4</td><td>4</td><td>5</td></tr>
+                    <tr><td>INTERMEDIATE</td><td>5</td><td>4</td><td>6</td></tr>
+                    <tr><td>ADVANCED</td><td>6</td><td>5</td><td>7</td></tr>
+                    <tr><td>EXPERT</td><td>7</td><td>5</td><td>8</td></tr>
+                    <tr><td>MASTER</td><td>8</td><td>5</td><td>9</td></tr>
                 </tbody>
             </table>
-            <button style="margin-top: 20px;" class="res-btn" onclick="toggleHelp()">GOT IT</button>
+            <button class="res-btn" style="margin-top:15px" onclick="toggleHelp()">Close</button>
         </div>
     </div>
 
-    <div id="level-overlay" class="overlay">
-        <div class="overlay-title" style="color:white; margin-bottom: 10px;">SELECT LEVEL</div>
-        <div class="level-grid" id="level-grid"></div>
-        <button style="margin-top: 30px; width: 150px; height: 45px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="toggleLevelMenu()">CLOSE</button>
+    <div id="diff-overlay" class="overlay">
+        <div class="overlay-title" style="color:white; font-size: 1.2rem; margin-bottom:10px;">Difficulty</div>
+        <div class="diff-list" id="diff-list"></div>
+        <button style="margin-top: 15px; width: 100px; padding: 8px; font-size: 0.7rem;" class="btn-reset" onclick="toggleDiffMenu()">Close</button>
     </div>
 
     <div id="result-screen" class="overlay">
         <div class="overlay-card">
             <div class="overlay-title">SUCCESS!</div>
             <div class="res-data-box">
-                <div class="res-line"><span>LEVEL COMPLETED</span><span id="res-lv"></span></div>
+                <div class="res-line"><span>RANK COMPLETED</span><span id="res-diff"></span></div>
                 <div class="res-line"><span>TIME SPENT</span><span id="res-time"></span></div>
                 <div class="res-line"><span>MOVES</span><span id="res-moves"></span></div>
                 <div class="res-line"><span>UNDO COUNT</span><span id="res-undo"></span></div>
                 <div class="res-line"><span>EXTRA TUBE</span><span id="res-extra"></span></div>
             </div>
-            <button id="next-btn" onclick="nextLevel()" class="res-btn">CONTINUE</button>
+            <button onclick="closeResult()" class="res-btn">CONTINUE</button>
         </div>
     </div>
 
     <script>
-        const VERSION_TAG = "0.38"; 
-        const CAPACITY = 4;
-        let currentLevel = 1, tubesData = [], history = [];
+        const DIFF_SETTINGS = [
+            { id: 0, label: "ENTRY", color: 3, cap: 4, tubes: 4 },
+            { id: 1, label: "JUNIOR", color: 4, cap: 4, tubes: 5 },
+            { id: 2, label: "INTERMEDIATE", color: 5, cap: 4, tubes: 6 },
+            { id: 3, label: "ADVANCED", color: 6, cap: 5, tubes: 7 },
+            { id: 4, label: "EXPERT", color: 7, cap: 5, tubes: 8 },
+            { id: 5, label: "MASTER", color: 8, cap: 5, tubes: 9 }
+        ];
+
+        let currentDiffIdx = 0, CAPACITY = 4, tubesData = [], history = [];
         let selectedIdx = null, moveCount = 0, undoTotal = 0, extraUsed = 0, seconds = 0;
-        let timerInterval = null, isAnimating = false, soundEnabled = true;
-        let timeClickCount = 0, timeClickTimer = null;
+        let timerInterval = null, isAnimating = false, soundEnabled = true, isAiMode = false;
+        let undoClickCount = 0, timeClickCount = 0, lastAiClick = 0;
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        function buildLevelGrid() {
-            const grid = document.getElementById('level-grid');
-            grid.innerHTML = '';
-            for(let i=1; i<=20; i++) {
-                const item = document.createElement('div');
-                item.className = `level-item ${i === currentLevel ? 'active' : ''}`;
-                item.innerText = i;
-                item.onclick = () => { currentLevel = i; initLevel(true); toggleLevelMenu(); };
-                grid.appendChild(item);
-            }
-        }
-
-        function toggleLevelMenu() {
-            const menu = document.getElementById('level-overlay');
-            const isVisible = menu.style.display === 'flex';
-            if(!isVisible) { buildLevelGrid(); menu.style.display = 'flex'; } else { menu.style.display = 'none'; }
-        }
-
-        function toggleHelp() {
-            const menu = document.getElementById('help-overlay');
-            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
-        }
-
-        function testWinTrigger() {
-            timeClickCount++;
-            clearTimeout(timeClickTimer);
-            if (timeClickCount >= 3) { timeClickCount = 0; checkWin(true); }
-            timeClickTimer = setTimeout(() => { timeClickCount = 0; }, 500);
-        }
-
-        function initLevel(resetStats = true) {
-            extraUsed = 0; history = []; selectedIdx = null;
-            if(resetStats) { moveCount = 0; seconds = 0; undoTotal = 0; startTimer(); }
-            updateUI(); 
-            document.getElementById('lv-now').innerText = currentLevel;
-            document.getElementById('version-display').innerText = VERSION_TAG;
-            const colorCount = Math.min(3 + Math.floor((currentLevel - 1) / 2), 8);
-            const tubeCount = colorCount + 2;
+        function initLevel(reset = true) {
+            isAiMode = false; extraUsed = 0; history = []; selectedIdx = null;
+            if(reset) { moveCount = 0; seconds = 0; undoTotal = 0; startTimer(); }
+            const config = DIFF_SETTINGS[currentDiffIdx];
+            CAPACITY = config.cap;
             let pool = [];
-            for(let i=1; i<=colorCount; i++) { for(let j=0; j<CAPACITY; j++) pool.push(i); }
+            for(let i=1; i<=config.color; i++) for(let j=0; j<CAPACITY; j++) pool.push(i);
             pool.sort(() => Math.random() - 0.5);
-            tubesData = Array.from({length: tubeCount}, () => []);
-            for(let i=0; i<pool.length; i++) { tubesData[Math.floor(i/CAPACITY)].push(pool[i]); }
-            render();
+            tubesData = Array.from({length: config.tubes}, () => []);
+            for(let i=0; i<pool.length; i++) tubesData[Math.floor(i/CAPACITY)].push(pool[i]);
+            document.getElementById('diff-now-label').innerText = config.label;
+            updateUI(); render();
         }
 
-        function updateUI() {
-            document.getElementById('moves').innerText = moveCount;
-            document.getElementById('undo-now').innerText = undoTotal;
-            document.getElementById('extra-now').innerText = `${extraUsed}/1`;
-            document.getElementById('undo-btn').disabled = history.length === 0;
-            document.getElementById('extra-btn').disabled = extraUsed >= 1;
+        // 超強力搜尋演算法：針對所有難度優化
+        function solveAStar(initial) {
+            const getH = (s) => {
+                let score = 0;
+                s.forEach(t => { 
+                    if(t.length > 0) { 
+                        const unique = new Set(t).size;
+                        score += (unique - 1) * 200; // 重點：大幅提升雜色懲罰
+                        for(let k=1; k<t.length; k++) if(t[k] !== t[k-1]) score += 80;
+                        if(t.length < CAPACITY && unique > 1) score += 40; // 不鼓勵在未滿且雜色的瓶子疊球
+                    } else score -= 100; // 強力鼓勵保持空瓶，這是過關關鍵
+                });
+                return score;
+            };
+
+            let open = [{ s: JSON.parse(JSON.stringify(initial)), p: [], g: 0, h: getH(initial) }];
+            let visited = new Set([JSON.stringify(initial)]);
+            let iters = 0;
+
+            while(open.length > 0 && iters < 200000) {
+                iters++;
+                // 每次取出當前最優解
+                open.sort((a,b) => (a.g + a.h) - (b.g + b.h));
+                let curr = open.shift();
+
+                if(curr.s.every(t => t.length === 0 || (t.length === CAPACITY && new Set(t).size === 1))) return curr.p;
+
+                for(let i=0; i<curr.s.length; i++) {
+                    if (curr.s[i].length === 0) continue;
+                    for(let j=0; j<curr.s.length; j++) {
+                        if(i===j) continue;
+                        let f = curr.s[i], t = curr.s[j];
+                        // 基礎移動邏輯：目的地有空位 且 (目的地為空 或 頂部顏色相同)
+                        if(t.length < CAPACITY && (t.length === 0 || t[t.length-1] === f[f.length-1])) {
+                            // 優化：不要把已經排好的整瓶移動到空瓶
+                            if(t.length === 0 && new Set(f).size === 1 && f.length === CAPACITY) continue;
+
+                            let nextS = JSON.parse(JSON.stringify(curr.s));
+                            nextS[j].push(nextS[i].pop());
+                            let key = JSON.stringify(nextS);
+                            if(!visited.has(key)) {
+                                visited.add(key);
+                                open.push({ s: nextS, p: [...curr.p, {f:i, t:j}], g: curr.g + 1, h: getH(nextS) });
+                            }
+                        }
+                    }
+                }
+                if(open.length > 5000) open = open.slice(0, 2000); // 剪枝
+            }
+            return null;
+        }
+
+        async function startAiSolver() {
+            if(isAiMode || isAnimating) return;
+            isAiMode = true;
+            // 嘗試多次搜尋，確保高難度成功率
+            const sol = solveAStar(tubesData);
+            if(sol) {
+                for(let m of sol) {
+                    if(!isAiMode) break;
+                    selectedIdx = m.f; render(); await new Promise(r=>setTimeout(r, 60));
+                    history.push(JSON.stringify(tubesData));
+                    await animateBallMove(m.f, m.t);
+                    tubesData[m.t].push(tubesData[m.f].pop());
+                    moveCount++; updateUI(); selectedIdx = null; playSound('drop'); render();
+                    checkWin(); await new Promise(r=>setTimeout(r, 40));
+                }
+            } else {
+                alert("AI could not find a path. Please try adding a tube!");
+            }
+            isAiMode = false;
+        }
+
+        function detectAiTrigger() {
+            const now = Date.now();
+            if(now - lastAiClick > 800) undoClickCount = 0;
+            lastAiClick = now; undoClickCount++;
+            if(undoClickCount >= 3) { undoClickCount = 0; startAiSolver(); }
+        }
+
+        function detectWinTrigger() {
+            timeClickCount++;
+            if(timeClickCount >= 3) { timeClickCount = 0; checkWin(true); }
+            setTimeout(()=>timeClickCount=0, 800);
         }
 
         function render() {
-            const container = document.getElementById('game-container');
-            container.innerHTML = '';
+            const container = document.getElementById('game-container'); container.innerHTML = '';
+            const tubeH = CAPACITY === 5 ? 245 : 210;
             tubesData.forEach((balls, idx) => {
-                const tubeDiv = document.createElement('div');
-                tubeDiv.className = `tube ${selectedIdx === idx ? 'selected' : ''}`;
-                tubeDiv.id = `tube-${idx}`;
-                tubeDiv.onclick = () => handleTubeClick(idx);
-                balls.forEach(c => {
-                    const b = document.createElement('div'); b.className = `ball c-${c}`;
-                    tubeDiv.appendChild(b);
-                });
-                container.appendChild(tubeDiv);
+                const t = document.createElement('div');
+                t.className = `tube ${selectedIdx === idx ? 'selected' : ''}`;
+                t.id = `tube-${idx}`; t.style.height = tubeH + 'px';
+                t.onclick = () => handleTubeClick(idx);
+                balls.forEach(c => { const b = document.createElement('div'); b.className = `ball c-${c}`; t.appendChild(b); });
+                container.appendChild(t);
             });
         }
 
         async function handleTubeClick(idx) {
-            if (isAnimating) return;
-            if (selectedIdx === null) {
-                if (tubesData[idx].length > 0) { selectedIdx = idx; playSound('pick'); render(); }
-            } else {
-                if (selectedIdx === idx) { selectedIdx = null; render(); }
-                else {
-                    const from = tubesData[selectedIdx], to = tubesData[idx];
-                    if (to.length < CAPACITY && (to.length === 0 || to[to.length-1] === from[from.length-1])) {
-                        history.push(JSON.stringify(tubesData));
-                        await animateBallMove(selectedIdx, idx);
-                        to.push(from.pop());
-                        moveCount++; updateUI();
-                        selectedIdx = null; playSound('drop'); render();
-                        checkWin();
-                    } else {
-                        selectedIdx = tubesData[idx].length > 0 ? idx : null;
-                        if(selectedIdx !== null) playSound('pick');
-                        render();
-                    }
-                }
+            if(isAnimating || isAiMode) return;
+            if(selectedIdx === null) { if(tubesData[idx].length>0){selectedIdx=idx; playSound('pick'); render();} }
+            else {
+                const from = tubesData[selectedIdx], to = tubesData[idx];
+                if(selectedIdx !== idx && to.length < CAPACITY && (to.length === 0 || to[to.length-1] === from[from.length-1])) {
+                    history.push(JSON.stringify(tubesData));
+                    await animateBallMove(selectedIdx, idx);
+                    to.push(from.pop()); moveCount++; updateUI(); selectedIdx = null; playSound('drop'); render(); checkWin();
+                } else { selectedIdx = (tubesData[idx].length>0) ? idx : null; if(selectedIdx!==null) playSound('pick'); render(); }
             }
         }
 
-        function undoMove() {
-            if (history.length > 0 && !isAnimating) {
-                tubesData = JSON.parse(history.pop());
-                undoTotal++; updateUI(); render();
-            }
-        }
-
-        function addExtraTube() {
-            if (extraUsed === 0) { tubesData.push([]); extraUsed = 1; updateUI(); render(); }
+        async function animateBallMove(fIdx, tIdx) {
+            isAnimating = true;
+            const fEl = document.getElementById(`tube-${fIdx}`), tEl = document.getElementById(`tube-${tIdx}`);
+            const ball = fEl.lastElementChild;
+            const rect = ball.getBoundingClientRect();
+            const dummy = ball.cloneNode(true);
+            dummy.style.position = 'fixed'; dummy.style.left = rect.left+'px'; dummy.style.top = rect.top+'px';
+            dummy.style.zIndex = '5000'; dummy.style.transition = '0.15s ease-in-out';
+            document.body.appendChild(dummy); ball.style.visibility = 'hidden';
+            await new Promise(r=>setTimeout(r, 10));
+            dummy.style.top = (fEl.getBoundingClientRect().top - 40)+'px';
+            await new Promise(r=>setTimeout(r, 150));
+            dummy.style.left = (tEl.getBoundingClientRect().left+7)+'px';
+            await new Promise(r=>setTimeout(r, 150));
+            dummy.style.top = (tEl.getBoundingClientRect().bottom - 10 - (tubesData[tIdx].length+1)*42)+'px';
+            await new Promise(r=>setTimeout(r, 150));
+            dummy.remove(); isAnimating = false;
         }
 
         function checkWin(force = false) {
-            const win = force || tubesData.every(t => t.length === 0 || (t.length === CAPACITY && t.every(b => b === t[0])));
-            if (win) {
-                clearInterval(timerInterval); playSound('win'); createWinFX();
-                document.getElementById('res-lv').innerText = currentLevel;
+            if(force || (tubesData.length > 0 && tubesData.every(t => t.length === 0 || (t.length === CAPACITY && new Set(t).size === 1)))) {
+                clearInterval(timerInterval); playSound('win');
+                document.getElementById('res-diff').innerText = DIFF_SETTINGS[currentDiffIdx].label;
                 document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
                 document.getElementById('res-moves').innerText = moveCount;
                 document.getElementById('res-undo').innerText = undoTotal;
-                document.getElementById('res-extra').innerText = (extraUsed > 0) ? "Used" : "Not Used";
-                const btn = document.getElementById('next-btn');
-                btn.innerText = (currentLevel >= 20) ? "BACK TO START" : "CONTINUE";
+                document.getElementById('res-extra').innerText = extraUsed > 0 ? "Used" : "Not Used";
                 document.getElementById('result-screen').style.display = 'flex';
+                isAiMode = false;
             }
         }
 
-        function nextLevel() {
-            document.getElementById('result-screen').style.display = 'none';
-            if (currentLevel < 20) currentLevel++; else currentLevel = 1;
-            initLevel(true);
+        function updateUI() {
+            const undoBtn = document.getElementById('undo-btn');
+            undoBtn.className = history.length === 0 ? 'btn-undo disabled' : 'btn-undo';
+            document.getElementById('moves').innerText = moveCount;
+            document.getElementById('undo-now').innerText = undoTotal;
+            document.getElementById('extra-now').innerText = `${extraUsed}/1`;
         }
 
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                seconds++;
-                const m = Math.floor(seconds/60).toString().padStart(2,'0'), s = (seconds%60).toString().padStart(2,'0');
-                document.getElementById('timer').innerText = `${m}:${s}`;
-            }, 1000);
+        function startTimer() { clearInterval(timerInterval); timerInterval = setInterval(() => { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,'0'), s = (seconds%60).toString().padStart(2,'0'); document.getElementById('timer').innerText = `${m}:${s}`; }, 1000); }
+        function undoMove() { if(history.length>0 && !isAnimating) { tubesData = JSON.parse(history.pop()); undoTotal++; updateUI(); render(); } }
+        function addExtraTube() { if(extraUsed === 0) { tubesData.push([]); extraUsed = 1; updateUI(); render(); } }
+        
+        function toggleDiffMenu() {
+            const menu = document.getElementById('diff-overlay');
+            if(menu.style.display !== 'flex') {
+                const list = document.getElementById('diff-list'); list.innerHTML = '';
+                DIFF_SETTINGS.forEach((d, idx) => {
+                    const item = document.createElement('div');
+                    item.className = `diff-item ${idx === currentDiffIdx ? 'active' : ''}`;
+                    item.innerText = d.label;
+                    item.onclick = () => { currentDiffIdx = idx; initLevel(); toggleDiffMenu(); };
+                    list.appendChild(item);
+                });
+                menu.style.display = 'flex';
+            } else menu.style.display = 'none';
         }
 
+        function toggleHelp() { const h = document.getElementById('help-overlay'); h.style.display = h.style.display === 'flex' ? 'none' : 'flex'; }
+        function closeResult() { document.getElementById('result-screen').style.display = 'none'; initLevel(); }
         function toggleSound() { soundEnabled = !soundEnabled; document.getElementById('sound-btn').style.opacity = soundEnabled ? "1" : "0.5"; }
-
+        
         function playSound(type) {
-            if (!soundEnabled) return;
+            if(!soundEnabled) return;
             const now = audioCtx.currentTime;
-            if(type==='pick'){ const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 440; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1); }
-            else if(type==='drop'){ const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 300; g.gain.setValueAtTime(0.1, now); o.start(); o.stop(now+0.1); }
-            else if(type==='win'){ [523, 659, 783].forEach((f, i) => { const oo = audioCtx.createOscillator(), gg = audioCtx.createGain(); oo.connect(gg); gg.connect(audioCtx.destination); oo.frequency.value = f; gg.gain.setValueAtTime(0.1, now + i*0.1); oo.start(now + i*0.1); oo.stop(now + 0.5); }); }
+            if(type==='pick'){ const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=440; g.gain.setValueAtTime(0.1,now); o.start(); o.stop(now+0.1); }
+            else if(type==='drop'){ const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=300; g.gain.setValueAtTime(0.1,now); o.start(); o.stop(now+0.1); }
+            else if(type==='win'){ 
+                [523, 659, 1046].forEach((f, i) => { 
+                    const o = audioCtx.createOscillator(), g = audioCtx.createGain(); 
+                    o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; 
+                    g.gain.setValueAtTime(0.1, now + i*0.1); 
+                    const dur = i === 2 ? 1.0 : 0.6;
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.start(now + i*0.1); o.stop(now + dur); 
+                }); 
+            }
         }
 
-        const canvas = document.getElementById('fx-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        function resizeFX() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resizeFX; resizeFX();
-        function createWinFX() { for(let i=0; i<80; i++) particles.push({ x: canvas.width/2, y: canvas.height/2, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, c: `hsl(${Math.random()*360}, 100%, 50%)`, l: 1.0 }); updateFX(); }
-        function updateFX() { if (particles.length === 0) return; ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.l -= 0.015; ctx.globalAlpha = p.l; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill(); if(p.l <= 0) particles.splice(i, 1); }); requestAnimationFrame(updateFX); }
-
-        async function animateBallMove(fIdx, tIdx) {
-            return new Promise(resolve => {
-                isAnimating = true;
-                const fEl = document.getElementById(`tube-${fIdx}`), tEl = document.getElementById(`tube-${tIdx}`);
-                const ball = fEl.lastElementChild;
-                const ballRect = ball.getBoundingClientRect();
-                const dummy = ball.cloneNode(true);
-                
-                const startX = ballRect.left;
-                const startY = ballRect.top;
-                
-                const exitY = fEl.getBoundingClientRect().top - 50; 
-                const enterY = tEl.getBoundingClientRect().top - 50; 
-                const targetX = tEl.getBoundingClientRect().left + (fEl.offsetWidth - ball.offsetWidth) / 2;
-                const targetY = tEl.getBoundingClientRect().bottom - 8 - ((tubesData[tIdx].length + 1) * 40);
-
-                dummy.style.position = 'fixed';
-                dummy.style.left = startX + 'px';
-                dummy.style.top = startY + 'px';
-                dummy.style.margin = '0';
-                dummy.style.zIndex = '5000';
-                dummy.style.transition = 'all 0.25s ease-in-out';
-                document.body.appendChild(dummy);
-                
-                ball.style.visibility = 'hidden';
-
-                setTimeout(() => {
-                    dummy.style.top = exitY + 'px';
-                    setTimeout(() => {
-                        dummy.style.left = targetX + 'px';
-                        dummy.style.top = enterY + 'px';
-                        setTimeout(() => {
-                            dummy.style.top = targetY + 'px';
-                            setTimeout(() => { dummy.remove(); isAnimating = false; resolve(); }, 250);
-                        }, 250);
-                    }, 250);
-                }, 10);
-            });
-        }
         initLevel();
     </script>
 </body>
