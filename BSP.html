@@ -28,8 +28,47 @@
             margin: 0; display: flex; flex-direction: column; align-items: center;
             height: 100vh; color: var(--text-main); overflow: hidden;
             touch-action: manipulation;
+            position: relative;
         }
 
+        /* 手機版專屬 (螢幕寬度小於 768px) */
+        @media screen and (max-width: 767px) {
+            body::after {
+                content: "";
+                position: absolute;
+                bottom: 0; left: 0; width: 100%; height: 1px;
+                background-color: rgba(255, 255, 255, 0.4);
+                z-index: 5000;
+            }
+            .footer { 
+                position: absolute;
+                bottom: 120px;
+                width: 100%;
+                max-width: 500px;
+                display: flex;
+                justify-content: center;
+                gap: 6px;
+                z-index: 1000;
+            }
+            #game-container {
+                padding-bottom: 220px; 
+            }
+        }
+
+        /* 網頁版專屬 (螢幕寬度大於 768px) */
+        @media screen and (min-width: 768px) {
+            .footer {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin: 20px 0 40px 0;
+                width: 100%;
+                max-width: 600px;
+            }
+            #game-container { flex-grow: 1; }
+        }
+
+        /* 公共樣式 */
         .score-container {
             margin-top: 10px; display: flex; flex-wrap: wrap;
             justify-content: center; gap: 6px; width: 95%; max-width: 600px;
@@ -52,23 +91,20 @@
         #game-container {
             display: flex; flex-wrap: wrap; justify-content: center;
             align-content: center; gap: 8px; padding: 10px;
-            flex-grow: 1; width: 100%; max-width: 850px;
+            width: 100%; max-width: 850px;
         }
+
         .tube {
             width: var(--tube-w); height: var(--tube-h);
             border: 3px solid rgba(255,255,255,0.25); border-top: none;
             border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
             display: flex; flex-direction: column-reverse; align-items: center;
-            /* 調整 padding-bottom 讓球更靠近底部 */
-            padding-bottom: 4px; 
-            cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
-            transform: translateY(-10px);
+            padding-bottom: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.08); transition: 0.2s;
         }
-        .tube.selected { transform: translateY(-25px); border-color: var(--highlight); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+        .tube.selected { transform: translateY(-15px); border-color: var(--highlight); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
 
         .ball {
             width: var(--ball-size); height: var(--ball-size); border-radius: 50%;
-            /* 降低間距讓球更密集並靠近瓶底 */
             margin-bottom: 1px; 
             background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
             box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3); flex-shrink: 0;
@@ -82,9 +118,8 @@
         .c-7 { --color-light: #1abc9c; }
         .c-8 { --color-light: #ecf0f1; }
 
-        .footer { display: flex; justify-content: center; gap: 4px; margin-bottom: 25px; width: 100%; max-width: 500px; }
         .footer button {
-            width: 18%; height: 42px; border: none; color: white; font-weight: bold;
+            width: 18%; height: 44px; border: none; color: white; font-weight: bold;
             border-radius: 6px; cursor: pointer; font-size: 0.65rem;
             text-transform: uppercase; transition: 0.1s;
         }
@@ -101,29 +136,19 @@
             background: rgba(10, 10, 25, 0.95); z-index: 4000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 88%; max-width: 380px; text-align: center; border: 2px solid var(--accent); }
+        .overlay-card { background: var(--tile-bg); padding: 25px; border-radius: 15px; width: 88%; max-width: 340px; text-align: center; border: 2px solid var(--accent); }
         .overlay-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 15px; color: var(--accent); }
-
         .help-table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #e0e0e0; font-size: 0.8rem; }
         .help-table th, .help-table td { padding: 10px 4px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .help-table th { color: #94a3b8; font-size: 0.7rem; }
-
-        .diff-list { 
-            display: grid; grid-template-columns: 1fr; gap: 8px; width: 220px; 
-            background: #2c3e50; padding: 10px; border-radius: 8px;
-        }
-        .diff-item { 
-            background: var(--tile-bg); padding: 12px; border-radius: 6px; 
-            font-weight: bold; color: #eee; cursor: pointer; 
-            text-align: center; font-size: 0.85rem;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .res-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #1a1a2e; }
+        
+        .diff-list { display: grid; grid-template-columns: 1fr; gap: 8px; width: 220px; background: #2c3e50; padding: 10px; border-radius: 8px; }
+        .diff-item { background: var(--tile-bg); padding: 12px; border-radius: 6px; font-weight: bold; color: #eee; cursor: pointer; text-align: center; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); }
         .diff-item.active { border: 2px solid var(--highlight); color: var(--highlight); }
-
         .res-data-box { margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; }
         .res-line { display: flex; justify-content: space-between; margin: 8px 0; color: #94a3b8; font-weight: bold; font-size: 0.85rem; }
         .res-line span:last-child { color: var(--highlight); }
-        .res-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #1a1a2e; }
     </style>
 </head>
 <body>
@@ -147,43 +172,9 @@
         <button class="btn-help" onclick="toggleHelp()">Help</button>
     </div>
 
-    <div id="help-overlay" class="overlay">
-        <div class="overlay-card">
-            <div class="overlay-title">GAME INFO</div>
-            <table class="help-table">
-                <thead><tr><th>RANK</th><th>COLORS</th><th>BALLS</th><th>TUBES</th></tr></thead>
-                <tbody>
-                    <tr><td>ENTRY</td><td>3</td><td>4</td><td>4</td></tr>
-                    <tr><td>JUNIOR</td><td>4</td><td>4</td><td>5</td></tr>
-                    <tr><td>INTERMEDIATE</td><td>5</td><td>4</td><td>6</td></tr>
-                    <tr><td>ADVANCED</td><td>6</td><td>5</td><td>8</td></tr>
-                    <tr><td>EXPERT</td><td>7</td><td>5</td><td>9</td></tr>
-                    <tr><td>MASTER</td><td>8</td><td>5</td><td>10</td></tr>
-                </tbody>
-            </table>
-            <button class="res-btn" style="margin-top:20px" onclick="toggleHelp()">CLOSE</button>
-        </div>
-    </div>
-
-    <div id="diff-overlay" class="overlay">
-        <div class="overlay-title" style="color:white; font-size: 1.2rem;">SELECT MODE</div>
-        <div class="diff-list" id="diff-list"></div>
-        <button style="margin-top: 15px; color:#94a3b8; background:none; border:none; cursor:pointer;" onclick="toggleDiffMenu()">CANCEL</button>
-    </div>
-
-    <div id="result-screen" class="overlay">
-        <div class="overlay-card">
-            <div class="overlay-title">SUCCESS!</div>
-            <div class="res-data-box">
-                <div class="res-line"><span>RANK</span><span id="res-diff"></span></div>
-                <div class="res-line"><span>TIME</span><span id="res-time"></span></div>
-                <div class="res-line"><span>MOVES</span><span id="res-moves"></span></div>
-                <div class="res-line"><span>UNDO</span><span id="res-undo"></span></div>
-                <div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div>
-            </div>
-            <button onclick="closeResult()" class="res-btn">CONTINUE</button>
-        </div>
-    </div>
+    <div id="help-overlay" class="overlay"><div class="overlay-card"><div class="overlay-title">GAME INFO</div><table class="help-table"><thead><tr><th>RANK</th><th>COLORS</th><th>BALLS</th><th>TUBES</th></tr></thead><tbody><tr><td>ENTRY</td><td>3</td><td>4</td><td>4</td></tr><tr><td>JUNIOR</td><td>4</td><td>4</td><td>5</td></tr><tr><td>INTERMEDIATE</td><td>5</td><td>4</td><td>6</td></tr><tr><td>ADVANCED</td><td>6</td><td>5</td><td>8</td></tr><tr><td>EXPERT</td><td>7</td><td>5</td><td>9</td></tr><tr><td>MASTER</td><td>8</td><td>5</td><td>10</td></tr></tbody></table><button class="res-btn" style="margin-top:20px" onclick="toggleHelp()">CLOSE</button></div></div>
+    <div id="diff-overlay" class="overlay"><div class="overlay-title" style="color:white; font-size: 1.2rem;">SELECT MODE</div><div class="diff-list" id="diff-list"></div><button style="margin-top: 15px; color:#94a3b8; background:none; border:none; cursor:pointer;" onclick="toggleDiffMenu()">CANCEL</button></div>
+    <div id="result-screen" class="overlay"><div class="overlay-card"><div class="overlay-title">SUCCESS!</div><div class="res-data-box"><div class="res-line"><span>RANK</span><span id="res-diff"></span></div><div class="res-line"><span>TIME</span><span id="res-time"></span></div><div class="res-line"><span>MOVES</span><span id="res-moves"></span></div><div class="res-line"><span>UNDO</span><span id="res-undo"></span></div><div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div></div><button onclick="closeResult()" class="res-btn">CONTINUE</button></div></div>
 
     <script>
         const DIFF_SETTINGS = [
@@ -215,6 +206,7 @@
             updateUI(); render();
         }
 
+        // --- AI SOLVER START ---
         function solveGameOptimized(initial) {
             const isWin = (s) => s.every(t => t.length === 0 || (t.length === CAPACITY && new Set(t).size === 1));
             const getHeuristic = (s) => {
@@ -280,21 +272,16 @@
                     moveCount++; updateUI(); selectedIdx = null; playSound('drop'); render();
                     checkWin(); await new Promise(r=>setTimeout(r, 40));
                 }
-            } else { alert("AI could not find a solution. Try adding a tube!"); }
+            } else { alert("AI could not find a solution."); }
             isAiMode = false;
         }
+        // --- AI SOLVER END ---
 
         function detectAiTrigger() {
             const now = Date.now();
             if(now - lastAiClick > 800) undoClickCount = 0;
             lastAiClick = now; undoClickCount++;
             if(undoClickCount >= 3) { undoClickCount = 0; startAiSolver(); }
-        }
-
-        function detectWinTrigger() {
-            timeClickCount++;
-            if(timeClickCount >= 3) { timeClickCount = 0; checkWin(true); }
-            setTimeout(()=>timeClickCount=0, 800);
         }
 
         function render() {
@@ -326,20 +313,18 @@
 
         async function animateBallMove(fIdx, tIdx) {
             isAnimating = true;
-            const ball = document.getElementById(`tube-${fIdx}`).lastElementChild;
-            const rect = ball.getBoundingClientRect();
+            const fromTube = document.getElementById(`tube-${fIdx}`), toTube = document.getElementById(`tube-${tIdx}`);
+            const ball = fromTube.lastElementChild, rect = ball.getBoundingClientRect();
             const dummy = ball.cloneNode(true);
-            dummy.style.position = 'fixed'; dummy.style.left = rect.left+'px'; dummy.style.top = rect.top+'px';
-            dummy.style.zIndex = '5000'; dummy.style.transition = '0.15s ease-in-out';
+            dummy.style.position = 'fixed'; dummy.style.left = rect.left + 'px'; dummy.style.top = rect.top + 'px';
+            dummy.style.zIndex = '5000'; dummy.style.transition = '0.18s cubic-bezier(0.4, 0, 0.2, 1)';
             document.body.appendChild(dummy); ball.style.visibility = 'hidden';
-            await new Promise(r=>setTimeout(r, 10));
-            dummy.style.top = (document.getElementById(`tube-${fIdx}`).getBoundingClientRect().top - 40)+'px';
-            await new Promise(r=>setTimeout(r, 150));
-            dummy.style.left = (document.getElementById(`tube-${tIdx}`).getBoundingClientRect().left+7)+'px';
-            await new Promise(r=>setTimeout(r, 150));
-            /* 動畫終點調整至靠近底部的座標 */
-            dummy.style.top = (document.getElementById(`tube-${tIdx}`).getBoundingClientRect().bottom - 10 - (tubesData[tIdx].length+1)*41)+'px';
-            await new Promise(r=>setTimeout(r, 150));
+            const fRect = fromTube.getBoundingClientRect(), tRect = toTube.getBoundingClientRect();
+            const topC = Math.min(fRect.top, tRect.top) - 50;
+            await new Promise(r => setTimeout(r, 10));
+            dummy.style.top = topC + 'px'; await new Promise(r => setTimeout(r, 160));
+            dummy.style.left = (tRect.left + (tRect.width - 40) / 2) + 'px'; await new Promise(r => setTimeout(r, 160));
+            dummy.style.top = (tRect.bottom - 5 - (tubesData[tIdx].length + 1) * 41) + 'px'; await new Promise(r => setTimeout(r, 160));
             dummy.remove(); isAnimating = false;
         }
 
@@ -362,11 +347,9 @@
             document.getElementById('undo-now').innerText = undoTotal;
             document.getElementById('extra-now').innerText = `${extraUsed}/1`;
         }
-
         function startTimer() { clearInterval(timerInterval); timerInterval = setInterval(() => { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,'0'), s = (seconds%60).toString().padStart(2,'0'); document.getElementById('timer').innerText = `${m}:${s}`; }, 1000); }
         function undoMove() { if(history.length>0 && !isAnimating) { tubesData = JSON.parse(history.pop()); undoTotal++; updateUI(); render(); } }
         function addExtraTube() { if(extraUsed === 0) { tubesData.push([]); extraUsed = 1; updateUI(); render(); } }
-        
         function toggleDiffMenu() {
             const menu = document.getElementById('diff-overlay');
             if(menu.style.display !== 'flex') {
@@ -381,30 +364,17 @@
                 menu.style.display = 'flex';
             } else menu.style.display = 'none';
         }
-
-        function toggleHelp() { 
-            const h = document.getElementById('help-overlay');
-            h.style.display = (h.style.display === 'flex') ? 'none' : 'flex';
-        }
-
+        function toggleHelp() { const h = document.getElementById('help-overlay'); h.style.display = (h.style.display === 'flex') ? 'none' : 'flex'; }
         function closeResult() { document.getElementById('result-screen').style.display = 'none'; initLevel(); }
         function toggleSound() { soundEnabled = !soundEnabled; document.getElementById('sound-btn').style.opacity = soundEnabled ? "1" : "0.5"; }
-        
+        function detectWinTrigger() { timeClickCount++; if(timeClickCount >= 3) { timeClickCount = 0; checkWin(true); } setTimeout(()=>timeClickCount=0, 800); }
+
         function playSound(type) {
             if(!soundEnabled) return;
             const now = audioCtx.currentTime;
             if(type==='pick'){ const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=440; g.gain.setValueAtTime(0.1,now); o.start(); o.stop(now+0.1); }
             else if(type==='drop'){ const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=300; g.gain.setValueAtTime(0.1,now); o.start(); o.stop(now+0.1); }
-            else if(type==='win'){ 
-                [523, 659, 1046].forEach((f, i) => { 
-                    const o = audioCtx.createOscillator(), g = audioCtx.createGain(); 
-                    o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; 
-                    g.gain.setValueAtTime(0.1, now + i*0.1); 
-                    const dur = i === 2 ? 1.0 : 0.6;
-                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.start(now + i*0.1); o.stop(now + dur); 
-                }); 
-            }
+            else if(type==='win'){ [523, 659, 1046].forEach((f, i) => { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; g.gain.setValueAtTime(0.1, now + i*0.1); const dur = i === 2 ? 1.0 : 0.6; g.gain.exponentialRampToValueAtTime(0.001, now + dur); o.start(now + i*0.1); o.stop(now + dur); }); }
         }
 
         initLevel();
