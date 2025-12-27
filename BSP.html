@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Sort - Professional Edition v0.43</title>
+    <title>Ball Sort - Professional Edition v0.42</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -31,11 +31,9 @@
             position: relative;
         }
 
-        /* 版本號顯示樣式 */
-        .version-tag {
-            font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 5px;
-        }
-
+        /* ----------------------------------------------------------- */
+        /* 手機版 (Mobile Specific) */
+        /* ----------------------------------------------------------- */
         @media screen and (max-width: 767px) {
             body::after {
                 content: "";
@@ -55,11 +53,19 @@
                 z-index: 1000;
             }
             #game-container {
-                padding-bottom: 220px; 
+                /* 精確修正：手機版第一排離上方 53px，兩排間隔 54px */
+                padding-top: 31px !important;
+                max-width: 375px !important;
+                row-gap: 42px !important;
+                align-content: flex-start !important;
+                height: calc(100vh - 120px);
             }
             .overlay-card { width: 88%; max-width: 340px; }
         }
 
+        /* ----------------------------------------------------------- */
+        /* 網頁版 (Desktop Specific) */
+        /* ----------------------------------------------------------- */
         @media screen and (min-width: 768px) {
             .footer {
                 display: flex;
@@ -73,6 +79,7 @@
             .overlay-card { width: 400px; }
         }
 
+        /* 公共樣式 */
         .score-container {
             margin-top: 10px; display: flex; flex-wrap: wrap;
             justify-content: center; gap: 6px; width: 95%; max-width: 600px;
@@ -119,7 +126,7 @@
         .c-4 { --color-light: #f1c40f; }
         .c-5 { --color-light: #9b59b6; }
         .c-6 { --color-light: #e67e22; }
-        .c-7 { --color-light: #555555; } /* 已修正為深灰色 */
+        .c-7 { --color-light: #555555; } /* 修改為深灰色 */
         .c-8 { --color-light: #ecf0f1; }
 
         .footer button {
@@ -143,6 +150,7 @@
         .overlay-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 15px; color: var(--accent); }
         .help-table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #e0e0e0; font-size: 0.8rem; }
         .help-table th, .help-table td { padding: 10px 4px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .help-table th { color: #94a3b8; font-size: 0.7rem; }
         .res-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #1a1a2e; }
         .res-data-box { margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; }
         .res-line { display: flex; justify-content: space-between; margin: 8px 0; color: #94a3b8; font-weight: bold; font-size: 0.85rem; }
@@ -163,10 +171,7 @@
     </div>
 
     <div class="difficulty-display" onclick="toggleDiffMenu()"><span id="diff-now-label">ENTRY</span> ▾</div>
-    <div class="version-tag">Professional Edition v0.43</div>
-
     <div id="game-container"></div>
-
     <div class="footer">
         <button id="undo-btn" class="btn-undo disabled" onclick="undoMove()">Undo</button>
         <button class="btn-extra" onclick="addExtraTube()">+Tube</button>
@@ -176,9 +181,7 @@
     </div>
 
     <div id="help-overlay" class="overlay"><div class="overlay-card"><div class="overlay-title">GAME INFO</div><table class="help-table"><thead><tr><th>RANK</th><th>COLORS</th><th>BALLS</th><th>TUBES</th></tr></thead><tbody><tr><td>ENTRY</td><td>3</td><td>4</td><td>4</td></tr><tr><td>JUNIOR</td><td>4</td><td>4</td><td>5</td></tr><tr><td>INTERMEDIATE</td><td>5</td><td>4</td><td>6</td></tr><tr><td>ADVANCED</td><td>6</td><td>5</td><td>8</td></tr><tr><td>EXPERT</td><td>7</td><td>5</td><td>9</td></tr><tr><td>MASTER</td><td>8</td><td>5</td><td>10</td></tr></tbody></table><button class="res-btn" style="margin-top:20px" onclick="toggleHelp()">CLOSE</button></div></div>
-    
     <div id="diff-overlay" class="overlay"><div class="overlay-title" style="color:white; font-size: 1.2rem;">SELECT MODE</div><div class="diff-list" id="diff-list"></div><button style="margin-top: 15px; color:#94a3b8; background:none; border:none; cursor:pointer;" onclick="toggleDiffMenu()">CANCEL</button></div>
-    
     <div id="result-screen" class="overlay"><div class="overlay-card"><div class="overlay-title">SUCCESS!</div><div class="res-data-box"><div class="res-line"><span>RANK</span><span id="res-diff"></span></div><div class="res-line"><span>TIME</span><span id="res-time"></span></div><div class="res-line"><span>MOVES</span><span id="res-moves"></span></div><div class="res-line"><span>UNDO</span><span id="res-undo"></span></div><div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div></div><button onclick="closeResult()" class="res-btn">CONTINUE</button></div></div>
 
     <script>
@@ -211,7 +214,7 @@
             updateUI(); render();
         }
 
-        /* AI Solver Engine */
+        /* --- AI SOLVER ENGINE --- */
         function solveGameOptimized(initial) {
             const isWin = (s) => s.every(t => t.length === 0 || (t.length === CAPACITY && new Set(t).size === 1));
             const getHeuristic = (s) => {
