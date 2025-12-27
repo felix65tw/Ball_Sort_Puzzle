@@ -32,7 +32,7 @@
         }
 
         /* ----------------------------------------------------------- */
-        /* 手機版 (Mobile Specific) */
+        /* 【手機版】專屬修正：完全隔離，不影響網頁版 */
         /* ----------------------------------------------------------- */
         @media screen and (max-width: 767px) {
             body::after {
@@ -53,17 +53,17 @@
                 z-index: 1000;
             }
             #game-container {
-                padding-top: 53px !important; /* 強制執行推移 */
-                padding-bottom: 220px; 
-                max-width: 380px;    /* 稍微放寬確保 6 個瓶子並排 */
-                row-gap: 154px;       /* 兩排間距 */
-                align-content: flex-start; /* 修正：改為從頂部排隊，padding 才會生效 */
+                padding-top: 30px !important; /* 第一排離難易度 53px */
+                max-width: 375px !important;    /* 限制 6 個瓶子寬度 */
+                row-gap: 154px !important;       /* 第一與第二排間隔 54px */
+                align-content: flex-start !important; /* 確保 padding-top 有效 */
+                height: calc(100vh - 120px);    /* 給予容器高度以觸發 row-gap */
             }
             .overlay-card { width: 88%; max-width: 340px; }
         }
 
         /* ----------------------------------------------------------- */
-        /* 網頁版 (Desktop Specific) */
+        /* 【網頁版】原始排版恢復，不准變動 */
         /* ----------------------------------------------------------- */
         @media screen and (min-width: 768px) {
             .footer {
@@ -74,11 +74,14 @@
                 width: 100%;
                 max-width: 600px;
             }
-            #game-container { flex-grow: 1; }
+            #game-container { 
+                flex-grow: 1; 
+                align-content: center; /* 恢復網頁版置中 */
+            }
             .overlay-card { width: 400px; }
         }
 
-        /* 公共樣式 */
+        /* 公共樣式 (僅保留結構) */
         .score-container {
             margin-top: 10px; display: flex; flex-wrap: wrap;
             justify-content: center; gap: 6px; width: 95%; max-width: 600px;
@@ -111,7 +114,7 @@
 
         #game-container {
             display: flex; flex-wrap: wrap; justify-content: center;
-            align-content: center; gap: 8px; padding: 10px;
+            gap: 8px; padding: 10px;
             width: 100%; max-width: 850px;
         }
 
@@ -151,6 +154,7 @@
         .btn-sound { background: var(--btn-sound); }
         .btn-help { background: var(--btn-help); }
 
+        /* 後續所有 CSS 與 JS 與先前版本完全一致，確保功能恢復 */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 10, 25, 0.95); z-index: 4000;
@@ -199,7 +203,7 @@
     <div id="result-screen" class="overlay"><div class="overlay-card"><div class="overlay-title">SUCCESS!</div><div class="res-data-box"><div class="res-line"><span>RANK</span><span id="res-diff"></span></div><div class="res-line"><span>TIME</span><span id="res-time"></span></div><div class="res-line"><span>MOVES</span><span id="res-moves"></span></div><div class="res-line"><span>UNDO</span><span id="res-undo"></span></div><div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div></div><button onclick="closeResult()" class="res-btn">CONTINUE</button></div></div>
 
     <script>
-        const APP_VERSION = "0.386"; // 版本號變數
+        const APP_VERSION = "0.385";
 
         const DIFF_SETTINGS = [
             { id: 0, label: "ENTRY", color: 3, cap: 4, tubes: 4 },
