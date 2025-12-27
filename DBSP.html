@@ -39,7 +39,7 @@
         }
 
         /* ----------------------------------------------------------- */
-        /* Mobile Specific */
+        /* Mobile Specific - MODIFIED HERE */
         /* ----------------------------------------------------------- */
         @media screen and (max-width: 767px) {
             body::after {
@@ -52,14 +52,16 @@
                 background-color: rgba(255, 255, 255, 0.4);
                 z-index: 5000;
             }
-            .footer {
+            .footer { 
                 position: absolute;
                 bottom: 120px;
                 width: 100%;
-                max-width: 500px;
+                /* MODIFIED: 整體寬度縮小5% (從500px改為475px) */
+                max-width: 475px !important;
                 display: flex;
                 justify-content: center;
-                gap: 6px;
+                /* MODIFIED: 按鍵間距縮小 (從6px改為3px) */
+                gap: 3px !important;
                 z-index: 1000;
             }
             #game-container {
@@ -70,7 +72,15 @@
                 height: calc(100vh - 120px);
             }
             .overlay-card { width: 88%; max-width: 340px; }
-            .footer button { width: 16%; height: 44px; font-size: 0.6rem; }
+            /* MODIFIED: 按鈕寬度調整，從18%改為16.5%以適應更窄的容器 */
+            .footer button { 
+                width: 16.5%; 
+                height: 44px; 
+                font-size: 0.6rem; 
+                /* 確保按鈕在小間距下仍然可點擊 */
+                min-width: 0;
+                padding: 0 2px;
+            }
         }
 
         /* ----------------------------------------------------------- */
@@ -213,6 +223,10 @@
             cursor: pointer;
             text-transform: uppercase;
             transition: 0.1s;
+            /* 確保按鈕內的文字不會溢出 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .btn-undo { background: var(--btn-undo); }
         .btn-undo.disabled { background: var(--btn-disabled); cursor: default; }
