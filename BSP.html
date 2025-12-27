@@ -53,10 +53,11 @@
                 z-index: 1000;
             }
             #game-container {
-                padding-top: 253px; 
+                padding-top: 153px !important; /* 強制執行推移 */
                 padding-bottom: 220px; 
-                max-width: 360px;
-                row-gap: 154px;
+                max-width: 380px;    /* 稍微放寬確保 6 個瓶子並排 */
+                row-gap: 54px;       /* 兩排間距 */
+                align-content: flex-start; /* 修正：改為從頂部排隊，padding 才會生效 */
             }
             .overlay-card { width: 88%; max-width: 340px; }
         }
@@ -198,7 +199,7 @@
     <div id="result-screen" class="overlay"><div class="overlay-card"><div class="overlay-title">SUCCESS!</div><div class="res-data-box"><div class="res-line"><span>RANK</span><span id="res-diff"></span></div><div class="res-line"><span>TIME</span><span id="res-time"></span></div><div class="res-line"><span>MOVES</span><span id="res-moves"></span></div><div class="res-line"><span>UNDO</span><span id="res-undo"></span></div><div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div></div><button onclick="closeResult()" class="res-btn">CONTINUE</button></div></div>
 
     <script>
-        const APP_VERSION = "0.389"; // 版本號變數
+        const APP_VERSION = "0.387"; // 版本號變數
 
         const DIFF_SETTINGS = [
             { id: 0, label: "ENTRY", color: 3, cap: 4, tubes: 4 },
