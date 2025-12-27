@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ball Sort - Professional Edition v0.5</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --tile-bg: #16213e;
+            --accent: #2ed573;
+            --text-main: #e0e0e0;
+            --ball-size: 40px;
+            --tube-w: 54px;
+            --tube-h: 210px;
+            --btn-undo: #3498db;
+            --btn-extra: #f39c12;
+            --btn-reset: #e74c3c;
+            --btn-sound: #8e44ad;
+            --btn-help: #95a5a6;
+            --btn-hint: #1abc9c;
+            --btn-disabled: #334155;
+            --highlight: #f1c40f;
+            --hint-color: #00ffff;
+        }
+
+        body {
+            font-family: 'Clear Sans', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            color: var(--text-main);
+            overflow: hidden;
+            touch-action: manipulation;
+            position: relative;
+        }
+
+        /* ----------------------------------------------------------- */
+        /* Mobile Specific */
+        /* ----------------------------------------------------------- */
+        @media screen and (max-width: 767px) {
+            body::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 1px;
+                background-color: rgba(255, 255, 255, 0.4);
+                z-index: 5000;
+            }
+            .footer {
+                position: absolute;
+                bottom: 120px;
+                width: 100%;
+                max-width: 500px;
+                display: flex;
+                justify-content: center;
+                gap: 6px;
+                z-index: 1000;
+            }
+            #game-container {
+                padding-top: 31px !important;
+                max-width: 375px !important;
+                row-gap: 42px !important;
+                align-content: flex-start !important;
+                height: calc(100vh - 120px);
+            }
+            .overlay-card { width: 88%; max-width: 340px; }
+            .footer button { width: 16%; height: 44px; font-size: 0.6rem; }
+        }
+
+        /* ----------------------------------------------------------- */
+        /* Desktop Specific */
+        /* ----------------------------------------------------------- */
+        @media screen and (min-width: 768px) {
+            .footer {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin: 20px 0 40px 0;
+                width: 100%;
+                max-width: 600px;
+            }
+            #game-container { flex-grow: 1; }
+            .overlay-card { width: 400px; }
+            .footer button { width: 15%; height: 44px; font-size: 0.65rem; }
+        }
+
+        /* Common Styles */
+        .score-container {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            width: 95%;
+            max-width: 600px;
+        }
+        .stat-tile {
+            background: var(--tile-bg);
+            min-width: 60px;
+            padding: 10px 4px;
+            border-radius: 6px;
+            text-align: center;
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+        }
+        .stat-label {
+            display: block;
+            font-size: 9px;
+            font-weight: bold;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            pointer-events: none;
+        }
+        .stat-val {
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--highlight);
+            pointer-events: none;
+        }
+
+        .difficulty-display {
+            margin-top: 12px;
+            padding: 8px 25px;
+            background: #2c3e50;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #eee;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        #game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            gap: 8px;
+            padding: 10px;
+            width: 100%;
+            max-width: 850px;
+        }
+
+        .tube {
+            width: var(--tube-w);
+            height: var(--tube-h);
+            border: 3px solid rgba(255,255,255,0.25);
+            border-top: none;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            padding-bottom: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.08);
+            transition: 0.2s;
+        }
+        .tube.selected {
+            transform: translateY(-15px);
+            border-color: var(--highlight);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+        }
+        .tube.hint-from {
+            border-color: var(--hint-color);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            animation: pulseHint 1.5s infinite alternate;
+        }
+        .tube.hint-to {
+            border-color: var(--hint-color);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            animation: pulseHint 1.5s infinite alternate-reverse;
+        }
+        @keyframes pulseHint {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.7); }
+        }
+
+        .ball {
+            width: var(--ball-size);
+            height: var(--ball-size);
+            border-radius: 50%;
+            margin-bottom: 1px;
+            background: radial-gradient(circle at 12px 12px, var(--color-light), #000);
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+        .c-1 { --color-light: #ff3333; }
+        .c-2 { --color-light: #3399ff; }
+        .c-3 { --color-light: #2ecc71; }
+        .c-4 { --color-light: #f1c40f; }
+        .c-5 { --color-light: #9b59b6; }
+        .c-6 { --color-light: #e67e22; }
+        .c-7 { --color-light: #555555; }
+        .c-8 { --color-light: #ecf0f1; }
+
+        .footer button {
+            height: 44px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.1s;
+        }
+        .btn-undo { background: var(--btn-undo); }
+        .btn-undo.disabled { background: var(--btn-disabled); cursor: default; }
+        .btn-extra { background: var(--btn-extra); }
+        .btn-reset { background: var(--btn-reset); }
+        .btn-sound { background: var(--btn-sound); }
+        .btn-help { background: var(--btn-help); }
+        .btn-hint { background: var(--btn-hint); }
+        .btn-hint.disabled { background: var(--btn-disabled); cursor: default; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 25, 0.95);
+            z-index: 4000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .overlay-card {
+            background: var(--tile-bg);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid var(--accent);
+        }
+        .overlay-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        .help-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            color: #e0e0e0;
+            font-size: 0.8rem;
+        }
+        .help-table th, .help-table td {
+            padding: 10px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .help-table th {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+        .res-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #1a1a2e;
+        }
+        .res-data-box {
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .res-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            color: #94a3b8;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .res-line span:last-child { color: var(--highlight); }
+
+        .diff-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            width: 220px;
+            background: #2c3e50;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .diff-item {
+            background: var(--tile-bg);
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #eee;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .diff-item.active {
+            border: 2px solid var(--highlight);
+            color: var(--highlight);
+        }
+        
+        .hint-remaining {
+            display: inline-block;
+            margin-left: 5px;
+            background: rgba(0, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.6rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="score-container">
+        <div class="stat-tile" onclick="detectWinTrigger()"><span class="stat-label">Time</span><span id="timer" class="stat-val">00:00</span></div>
+        <div class="stat-tile"><span class="stat-label">Moves</span><span id="moves" class="stat-val">0</span></div>
+        <div class="stat-tile" id="ai-trigger" onclick="detectAiTrigger()"><span class="stat-label">Undo</span><span id="undo-now" class="stat-val">0</span></div>
+        <div class="stat-tile"><span class="stat-label">Extra</span><span id="extra-now" class="stat-val">0/1</span></div>
+        <div class="stat-tile"><span class="stat-label">Hints</span><span id="hints-now" class="stat-val">3</span></div>
+    </div>
+
+    <div class="difficulty-display" onclick="toggleDiffMenu()"><span id="diff-now-label">ENTRY</span> ▾</div>
+
+    <div id="game-container"></div>
+    <div class="footer">
+        <button id="undo-btn" class="btn-undo disabled" onclick="undoMove()">Undo</button>
+        <button class="btn-extra" onclick="addExtraTube()">+Tube</button>
+        <button id="hint-btn" class="btn-hint" onclick="showHint()">Hint <span id="hint-counter" class="hint-remaining">3</span></button>
+        <button class="btn-reset" onclick="initLevel(false)">Reset</button>
+        <button id="sound-btn" class="btn-sound" onclick="toggleSound()">Sound</button>
+        <button class="btn-help" onclick="toggleHelp()">Help</button>
+    </div>
+
+    <div id="help-overlay" class="overlay">
+        <div class="overlay-card">
+            <div class="overlay-title">GAME INFO</div>
+            <table class="help-table">
+                <thead>
+                    <tr><th>RANK</th><th>COLORS</th><th>BALLS</th><th>TUBES</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>ENTRY</td><td>3</td><td>4</td><td>4</td></tr>
+                    <tr><td>JUNIOR</td><td>4</td><td>4</td><td>5</td></tr>
+                    <tr><td>INTERMEDIATE</td><td>5</td><td>4</td><td>6</td></tr>
+                    <tr><td>ADVANCED</td><td>6</td><td>5</td><td>8</td></tr>
+                    <tr><td>EXPERT</td><td>7</td><td>5</td><td>9</td></tr>
+                    <tr><td>MASTER</td><td>8</td><td>5</td><td>10</td></tr>
+                </tbody>
+            </table>
+            <button class="res-btn" style="margin-top:20px" onclick="toggleHelp()">CLOSE</button>
+        </div>
+    </div>
+    
+    <div id="diff-overlay" class="overlay">
+        <div class="overlay-title" style="color:white; font-size: 1.2rem;">SELECT MODE</div>
+        <div class="diff-list" id="diff-list"></div>
+        <button style="margin-top: 15px; color:#94a3b8; background:none; border:none; cursor:pointer;" onclick="toggleDiffMenu()">CANCEL</button>
+    </div>
+    
+    <div id="result-screen" class="overlay">
+        <div class="overlay-card">
+            <div class="overlay-title">SUCCESS!</div>
+            <div class="res-data-box">
+                <div class="res-line"><span>RANK</span><span id="res-diff"></span></div>
+                <div class="res-line"><span>TIME</span><span id="res-time"></span></div>
+                <div class="res-line"><span>MOVES</span><span id="res-moves"></span></div>
+                <div class="res-line"><span>UNDO</span><span id="res-undo"></span></div>
+                <div class="res-line"><span>EXTRA</span><span id="res-extra"></span></div>
+                <div class="res-line"><span>HINTS USED</span><span id="res-hints"></span></div>
+            </div>
+            <button onclick="closeResult()" class="res-btn">CONTINUE</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // GAME CONFIGURATION
+        // ============================================================================
+        const DIFF_SETTINGS = [
+            { id: 0, label: "ENTRY", color: 3, cap: 4, tubes: 4 },
+            { id: 1, label: "JUNIOR", color: 4, cap: 4, tubes: 5 },
+            { id: 2, label: "INTERMEDIATE", color: 5, cap: 4, tubes: 6 },
+            { id: 3, label: "ADVANCED", color: 6, cap: 5, tubes: 8 },
+            { id: 4, label: "EXPERT", color: 7, cap: 5, tubes: 9 },
+            { id: 5, label: "MASTER", color: 8, cap: 5, tubes: 10 }
+        ];
+
+        // ============================================================================
+        // GAME STATE MANAGEMENT
+        // ============================================================================
+        class GameState {
+            constructor() {
+                this.currentDiffIdx = 0;
+                this.CAPACITY = 4;
+                this.tubesData = [];
+                this.history = [];
+                this.selectedIdx = null;
+                this.moveCount = 0;
+                this.undoTotal = 0;
+                this.extraUsed = 0;
+                this.hintsUsed = 0;
+                this.hintsLeft = 3;
+                this.seconds = 0;
+                this.timerInterval = null;
+                this.isAnimating = false;
+                this.soundEnabled = true;
+                this.isAiMode = false;
+                this.undoClickCount = 0;
+                this.timeClickCount = 0;
+                this.lastAiClick = 0;
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        const gameState = new GameState();
+
+        // ============================================================================
+        // CORE GAME FUNCTIONS
+        // ============================================================================
+        function initLevel(reset = true) {
+            gameState.isAiMode = false;
+            gameState.extraUsed = 0;
+            gameState.history = [];
+            gameState.selectedIdx = null;
+            
+            if (reset) {
+                gameState.moveCount = 0;
+                gameState.seconds = 0;
+                gameState.undoTotal = 0;
+                gameState.hintsUsed = 0;
+                gameState.hintsLeft = 3;
+                startTimer();
+            }
+            
+            const config = DIFF_SETTINGS[gameState.currentDiffIdx];
+            gameState.CAPACITY = config.cap;
+            
+            // Generate random balls
+            let pool = [];
+            for (let i = 1; i <= config.color; i++) {
+                for (let j = 0; j < gameState.CAPACITY; j++) {
+                    pool.push(i);
+                }
+            }
+            pool.sort(() => Math.random() - 0.5);
+            
+            // Distribute balls to tubes
+            gameState.tubesData = Array.from({ length: config.tubes }, () => []);
+            for (let i = 0; i < pool.length; i++) {
+                gameState.tubesData[Math.floor(i / gameState.CAPACITY)].push(pool[i]);
+            }
+            
+            document.getElementById('diff-now-label').innerText = config.label;
+            updateUI();
+            render();
+        }
+
+        // ============================================================================
+        // RENDERING FUNCTIONS
+        // ============================================================================
+        function render() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = '';
+            
+            const config = DIFF_SETTINGS[gameState.currentDiffIdx];
+            const tubeW = config.tubes > 8 ? '48px' : '54px';
+            
+            gameState.tubesData.forEach((balls, idx) => {
+                const tube = document.createElement('div');
+                tube.className = `tube ${gameState.selectedIdx === idx ? 'selected' : ''}`;
+                tube.id = `tube-${idx}`;
+                tube.style.width = tubeW;
+                tube.onclick = () => handleTubeClick(idx);
+                
+                balls.forEach(color => {
+                    const ball = document.createElement('div');
+                    ball.className = `ball c-${color}`;
+                    tube.appendChild(ball);
+                });
+                
+                container.appendChild(tube);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('undo-btn').className = 
+                gameState.history.length === 0 ? 'btn-undo disabled' : 'btn-undo';
+            document.getElementById('hint-btn').className = 
+                gameState.hintsLeft === 0 ? 'btn-hint disabled' : 'btn-hint';
+            document.getElementById('hint-counter').innerText = gameState.hintsLeft;
+            
+            document.getElementById('moves').innerText = gameState.moveCount;
+            document.getElementById('undo-now').innerText = gameState.undoTotal;
+            document.getElementById('extra-now').innerText = `${gameState.extraUsed}/1`;
+            document.getElementById('hints-now').innerText = gameState.hintsLeft;
+        }
+
+        // ============================================================================
+        // GAME LOGIC FUNCTIONS
+        // ============================================================================
+        function handleTubeClick(idx) {
+            if (gameState.isAnimating || gameState.isAiMode) return;
+            
+            if (gameState.selectedIdx === null) {
+                if (gameState.tubesData[idx].length > 0) {
+                    gameState.selectedIdx = idx;
+                    playSound('pick');
+                    render();
+                }
+            } else {
+                const from = gameState.tubesData[gameState.selectedIdx];
+                const to = gameState.tubesData[idx];
+                
+                if (gameState.selectedIdx !== idx && 
+                    to.length < gameState.CAPACITY && 
+                    (to.length === 0 || to[to.length - 1] === from[from.length - 1])) {
+                    
+                    gameState.history.push(JSON.stringify(gameState.tubesData));
+                    animateBallMove(gameState.selectedIdx, idx).then(() => {
+                        to.push(from.pop());
+                        gameState.moveCount++;
+                        updateUI();
+                        gameState.selectedIdx = null;
+                        playSound('drop');
+                        render();
+                        checkWin();
+                    });
+                } else {
+                    gameState.selectedIdx = (gameState.tubesData[idx].length > 0) ? idx : null;
+                    if (gameState.selectedIdx !== null) playSound('pick');
+                    render();
+                }
+            }
+        }
+
+        function canMove(fromIdx, toIdx) {
+            const from = gameState.tubesData[fromIdx];
+            const to = gameState.tubesData[toIdx];
+            
+            if (from.length === 0) return false;
+            if (fromIdx === toIdx) return false;
+            if (to.length >= gameState.CAPACITY) return false;
+            if (to.length === 0) return true;
+            
+            return to[to.length - 1] === from[from.length - 1];
+        }
+
+        function isTubeComplete(tubeIdx) {
+            const tube = gameState.tubesData[tubeIdx];
+            if (tube.length === 0) return true;
+            if (tube.length < gameState.CAPACITY) return false;
+            
+            const firstColor = tube[0];
+            return tube.every(color => color === firstColor);
+        }
+
+        function checkWin(force = false) {
+            const isWinningState = gameState.tubesData.length > 0 && 
+                gameState.tubesData.every(t => 
+                    t.length === 0 || 
+                    (t.length === gameState.CAPACITY && new Set(t).size === 1)
+                );
+            
+            if (force || isWinningState) {
+                clearInterval(gameState.timerInterval);
+                playSound('win');
+                
+                document.getElementById('res-diff').innerText = DIFF_SETTINGS[gameState.currentDiffIdx].label;
+                document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
+                document.getElementById('res-moves').innerText = gameState.moveCount;
+                document.getElementById('res-undo').innerText = gameState.undoTotal;
+                document.getElementById('res-extra').innerText = gameState.extraUsed > 0 ? "Used" : "Not Used";
+                document.getElementById('res-hints').innerText = gameState.hintsUsed;
+                
+                document.getElementById('result-screen').style.display = 'flex';
+                gameState.isAiMode = false;
+            }
+        }
+
+        // ============================================================================
+        // HINT SYSTEM
+        // ============================================================================
+        function showHint() {
+            if (gameState.isAnimating || gameState.isAiMode || gameState.hintsLeft <= 0) {
+                playSound('error');
+                return;
+            }
+            
+            const hint = findBestHint();
+            if (hint) {
+                gameState.hintsUsed++;
+                gameState.hintsLeft--;
+                updateUI();
+                
+                // Highlight the suggested move
+                const fromTube = document.getElementById(`tube-${hint.from}`);
+                const toTube = document.getElementById(`tube-${hint.to}`);
+                
+                fromTube.classList.add('hint-from');
+                toTube.classList.add('hint-to');
+                
+                // Auto-select the from tube
+                gameState.selectedIdx = hint.from;
+                render();
+                
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                    fromTube.classList.remove('hint-from');
+                    toTube.classList.remove('hint-to');
+                }, 3000);
+                
+                playSound('pick');
+            } else {
+                // No valid moves found
+                playSound('error');
+                alert("No valid moves available for a hint!");
+            }
+        }
+
+        function findBestHint() {
+            const moves = [];
+            
+            // Find all legal moves
+            for (let i = 0; i < gameState.tubesData.length; i++) {
+                if (gameState.tubesData[i].length === 0) continue;
+                
+                for (let j = 0; j < gameState.tubesData.length; j++) {
+                    if (i === j) continue;
+                    
+                    if (canMove(i, j)) {
+                        const move = { from: i, to: j };
+                        move.priority = calculateMovePriority(i, j);
+                        moves.push(move);
+                    }
+                }
+            }
+            
+            if (moves.length === 0) return null;
+            
+            // Sort by priority (higher is better)
+            moves.sort((a, b) => b.priority - a.priority);
+            return moves[0];
+        }
+
+        function calculateMovePriority(fromIdx, toIdx) {
+            let priority = 0;
+            const from = gameState.tubesData[fromIdx];
+            const to = gameState.tubesData[toIdx];
+            const color = from[from.length - 1];
+            
+            // Priority 1: Complete a tube (highest priority)
+            if (to.length === gameState.CAPACITY - 1 && 
+                to.every(c => c === color)) {
+                priority += 1000;
+            }
+            
+            // Priority 2: Move to a tube with same color
+            if (to.length > 0 && to[to.length - 1] === color) {
+                priority += 200;
+            }
+            
+            // Priority 3: Avoid moving from a completed tube
+            if (isTubeComplete(fromIdx)) {
+                priority -= 500;
+            }
+            
+            // Priority 4: Prefer moving to empty tubes when beneficial
+            if (to.length === 0) {
+                // Check if moving this ball will expose more of the same color
+                const sameColorBelow = from.filter((c, idx) => 
+                    idx < from.length - 1 && c === color
+                ).length;
+                
+                if (sameColorBelow > 0) {
+                    priority += 50 * sameColorBelow;
+                } else {
+                    // Moving to empty tube when it doesn't expose same color is less beneficial
+                    priority += 30;
+                }
+            }
+            
+            // Priority 5: Move balls that are blocking other colors
+            const uniqueColors = new Set(from).size;
+            if (uniqueColors > 1) {
+                // This tube has mixed colors, moving might help
+                priority += 20;
+            }
+            
+            return priority;
+        }
+
+        // ============================================================================
+        // ANIMATION FUNCTIONS
+        // ============================================================================
+        async function animateBallMove(fIdx, tIdx) {
+            gameState.isAnimating = true;
+            
+            const fromTube = document.getElementById(`tube-${fIdx}`);
+            const toTube = document.getElementById(`tube-${tIdx}`);
+            const ball = fromTube.lastElementChild;
+            
+            if (!ball) {
+                gameState.isAnimating = false;
+                return;
+            }
+            
+            const rect = ball.getBoundingClientRect();
+            const dummy = ball.cloneNode(true);
+            
+            dummy.style.position = 'fixed';
+            dummy.style.left = rect.left + 'px';
+            dummy.style.top = rect.top + 'px';
+            dummy.style.zIndex = '5000';
+            dummy.style.transition = '0.18s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            document.body.appendChild(dummy);
+            ball.style.visibility = 'hidden';
+            
+            const fRect = fromTube.getBoundingClientRect();
+            const tRect = toTube.getBoundingClientRect();
+            const topC = Math.min(fRect.top, tRect.top) - 50;
+            
+            // Animation sequence
+            await sleep(10);
+            dummy.style.top = topC + 'px';
+            await sleep(160);
+            dummy.style.left = (tRect.left + (tRect.width - 40) / 2) + 'px';
+            await sleep(160);
+            dummy.style.top = (tRect.bottom - 5 - (gameState.tubesData[tIdx].length + 1) * 41) + 'px';
+            await sleep(160);
+            
+            dummy.remove();
+            gameState.isAnimating = false;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ============================================================================
+        // AI SOLVER (OPTIMIZED)
+        // ============================================================================
+        function solveGameOptimized(initial) {
+            const CAP = gameState.CAPACITY;
+            const isWin = (s) => s.every(t => t.length === 0 || (t.length === CAP && new Set(t).size === 1));
+            
+            const getHeuristic = (s) => {
+                let score = 0;
+                s.forEach(t => {
+                    if (t.length === 0) score -= 100;
+                    else {
+                        const uniqueColors = new Set(t).size;
+                        score += (uniqueColors - 1) * 200;
+                        score += (CAP - t.length) * 10;
+                    }
+                });
+                return score;
+            };
+            
+            const serialize = (s) => JSON.stringify(s);
+            let startNode = { s: initial, p: [], g: 0, h: getHeuristic(initial) };
+            let openSet = [startNode];
+            let visited = new Set([serialize(initial)]);
+            let iterations = 0;
+            
+            while (openSet.length > 0 && iterations < 15000) {
+                iterations++;
+                openSet.sort((a, b) => (a.g + a.h) - (b.g + b.h));
+                let curr = openSet.shift();
+                
+                if (isWin(curr.s)) return curr.p;
+                
+                for (let i = 0; i < curr.s.length; i++) {
+                    if (curr.s[i].length === 0) continue;
+                    
+                    for (let j = 0; j < curr.s.length; j++) {
+                        if (i === j) continue;
+                        
+                        let from = curr.s[i], to = curr.s[j];
+                        if (to.length < CAP && (to.length === 0 || to[to.length - 1] === from[from.length - 1])) {
+                            let nextS = curr.s.map((t, idx) => {
+                                if (idx === i) return t.slice(0, -1);
+                                if (idx === j) return [...t, from[from.length - 1]];
+                                return t;
+                            });
+                            
+                            let key = serialize(nextS);
+                            if (!visited.has(key)) {
+                                visited.add(key);
+                                openSet.push({
+                                    s: nextS,
+                                    p: [...curr.p, { f: i, t: j }],
+                                    g: curr.g + 1,
+                                    h: getHeuristic(nextS)
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                if (openSet.length > 2500) openSet = openSet.slice(0, 1000);
+            }
+            
+            return null;
+        }
+
+        async function startAiSolver() {
+            if (gameState.isAiMode || gameState.isAnimating) return;
+            
+            gameState.isAiMode = true;
+            const solution = solveGameOptimized(gameState.tubesData);
+            
+            if (solution) {
+                for (let move of solution) {
+                    if (!gameState.isAiMode) break;
+                    
+                    gameState.selectedIdx = move.f;
+                    render();
+                    await sleep(60);
+                    
+                    gameState.history.push(JSON.stringify(gameState.tubesData));
+                    await animateBallMove(move.f, move.t);
+                    
+                    gameState.tubesData[move.t].push(gameState.tubesData[move.f].pop());
+                    gameState.moveCount++;
+                    updateUI();
+                    gameState.selectedIdx = null;
+                    playSound('drop');
+                    render();
+                    checkWin();
+                    await sleep(40);
+                }
+            } else {
+                alert("AI could not find a solution.");
+            }
+            
+            gameState.isAiMode = false;
+        }
+
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                gameState.seconds++;
+                const m = Math.floor(gameState.seconds / 60).toString().padStart(2, '0');
+                const s = (gameState.seconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function undoMove() {
+            if (gameState.history.length > 0 && !gameState.isAnimating) {
+                gameState.tubesData = JSON.parse(gameState.history.pop());
+                gameState.undoTotal++;
+                updateUI();
+                render();
+            }
+        }
+
+        function addExtraTube() {
+            if (gameState.extraUsed === 0) {
+                gameState.tubesData.push([]);
+                gameState.extraUsed = 1;
+                updateUI();
+                render();
+            }
+        }
+
+        function detectAiTrigger() {
+            const now = Date.now();
+            if (now - gameState.lastAiClick > 800) gameState.undoClickCount = 0;
+            
+            gameState.lastAiClick = now;
+            gameState.undoClickCount++;
+            
+            if (gameState.undoClickCount >= 3) {
+                gameState.undoClickCount = 0;
+                startAiSolver();
+            }
+        }
+
+        function detectWinTrigger() {
+            gameState.timeClickCount++;
+            if (gameState.timeClickCount >= 3) {
+                gameState.timeClickCount = 0;
+                checkWin(true);
+            }
+            setTimeout(() => gameState.timeClickCount = 0, 800);
+        }
+
+        // ============================================================================
+        // UI MANAGEMENT FUNCTIONS
+        // ============================================================================
+        function toggleDiffMenu() {
+            const menu = document.getElementById('diff-overlay');
+            
+            if (menu.style.display !== 'flex') {
+                const list = document.getElementById('diff-list');
+                list.innerHTML = '';
+                
+                DIFF_SETTINGS.forEach((diff, idx) => {
+                    const item = document.createElement('div');
+                    item.className = `diff-item ${idx === gameState.currentDiffIdx ? 'active' : ''}`;
+                    item.innerText = diff.label;
+                    item.onclick = () => {
+                        gameState.currentDiffIdx = idx;
+                        initLevel();
+                        toggleDiffMenu();
+                    };
+                    list.appendChild(item);
+                });
+                
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        function toggleHelp() {
+            const help = document.getElementById('help-overlay');
+            help.style.display = (help.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function closeResult() {
+            document.getElementById('result-screen').style.display = 'none';
+            initLevel();
+        }
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('sound-btn').style.opacity = gameState.soundEnabled ? "1" : "0.5";
+        }
+
+        // ============================================================================
+        // SOUND FUNCTIONS
+        // ============================================================================
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            
+            const now = gameState.audioCtx.currentTime;
+            
+            try {
+                if (type === 'pick') {
+                    const osc = gameState.audioCtx.createOscillator();
+                    const gain = gameState.audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(gameState.audioCtx.destination);
+                    osc.frequency.value = 440;
+                    gain.gain.setValueAtTime(0.1, now);
+                    osc.start();
+                    osc.stop(now + 0.1);
+                } else if (type === 'drop') {
+                    const osc = gameState.audioCtx.createOscillator();
+                    const gain = gameState.audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(gameState.audioCtx.destination);
+                    osc.frequency.value = 300;
+                    gain.gain.setValueAtTime(0.1, now);
+                    osc.start();
+                    osc.stop(now + 0.1);
+                } else if (type === 'win') {
+                    [523, 659, 1046].forEach((freq, i) => {
+                        const osc = gameState.audioCtx.createOscillator();
+                        const gain = gameState.audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(gameState.audioCtx.destination);
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                        const dur = i === 2 ? 1.0 : 0.6;
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + dur);
+                    });
+                } else if (type === 'error') {
+                    const osc = gameState.audioCtx.createOscillator();
+                    const gain = gameState.audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(gameState.audioCtx.destination);
+                    osc.frequency.value = 150;
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start();
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {
+                console.log("Audio error:", e);
+            }
+        }
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        initLevel();
+    </script>
+</body>
+</html>
